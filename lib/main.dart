@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'core/theme/theme.dart';
+import 'feature/showcase/presentation/pages/showcase_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system, // Follows device setting
 
-      home: const MyHomePage(title: 'Task Todo'),
+      home: const ShowcasePage(), // Widget showcase for testing
     );
   }
 }

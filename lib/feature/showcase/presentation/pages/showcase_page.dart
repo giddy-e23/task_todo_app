@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_plus/iconsax_plus.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../shared/shared.dart';
+import '../../../../shared/widgets/navigation/custom_bottom_nav.dart';
 
 /// Showcase page demonstrating all widgets and theme.
 class ShowcasePage extends StatefulWidget {
@@ -29,13 +31,14 @@ class _ShowcasePageState extends State<ShowcasePage> {
     final colors = AppColors.of(context);
 
     return Scaffold(
+      extendBody: true, // Required for glass effect on bottom nav
       backgroundColor: colors.background,
       appBar: AppTopBar(
         title: 'Widget Showcase',
         showBackButton: false,
         actions: [
           IconButton(
-            icon: Icon(Icons.brightness_6, color: colors.textPrimary),
+            icon: Icon(IconsaxPlusLinear.sun_1, color: colors.textPrimary),
             onPressed: () {
               // Toggle theme would go here
             },
@@ -62,38 +65,39 @@ class _ShowcasePageState extends State<ShowcasePage> {
           ],
         ),
       ),
-      bottomNavigationBar: AppBottomNavBar(
+      floatingActionButton: AppFab(
+        onTap: () {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Add button pressed!')));
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: CustomBottomNavBar(
         currentIndex: _navIndex,
-        onTap: (index) => setState(() => _navIndex = index),
         items: const [
-          BottomNavItem(
-            icon: Icons.home_outlined,
-            activeIcon: Icons.home,
+          NavItem(
+            icon: IconsaxPlusLinear.home_2,
+            activeIcon: IconsaxPlusBold.home_2,
             label: 'Home',
           ),
-          BottomNavItem(
-            icon: Icons.calendar_today_outlined,
-            activeIcon: Icons.calendar_today,
+          NavItem(
+            icon: IconsaxPlusLinear.calendar_1,
+            activeIcon: IconsaxPlusBold.calendar_1,
             label: 'Calendar',
           ),
-          BottomNavItem(
-            icon: Icons.folder_outlined,
-            activeIcon: Icons.folder,
-            label: 'Projects',
+          NavItem(
+            icon: IconsaxPlusLinear.document_text,
+            activeIcon: IconsaxPlusBold.document_text,
+            label: 'Documents',
           ),
-          BottomNavItem(
-            icon: Icons.person_outline,
-            activeIcon: Icons.person,
+          NavItem(
+            icon: IconsaxPlusLinear.profile_2user,
+            activeIcon: IconsaxPlusBold.profile_2user,
             label: 'Profile',
           ),
         ],
-        centerButton: AddFloatingButton(
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Add button pressed!')),
-            );
-          },
-        ),
+        onTap: (index) => setState(() => _navIndex = index),
       ),
     );
   }
@@ -248,17 +252,17 @@ class _ShowcasePageState extends State<ShowcasePage> {
         AppSpacing.gapVerticalSM,
         Row(
           children: [
-            AppIconButton(icon: Icons.edit, onPressed: () {}),
+            AppIconButton(icon: IconsaxPlusLinear.edit_2, onPressed: () {}),
             AppSpacing.gapHorizontalSM,
             AppIconButton(
-              icon: Icons.delete,
+              icon: IconsaxPlusLinear.trash,
               backgroundColor: AppColorPalette.errorLight,
               iconColor: AppColorPalette.error,
               onPressed: () {},
             ),
             AppSpacing.gapHorizontalSM,
             AppIconButton(
-              icon: Icons.favorite,
+              icon: IconsaxPlusLinear.heart,
               backgroundColor: AppColorPalette.primarySurface,
               iconColor: AppColorPalette.primary,
               onPressed: () {},
@@ -375,7 +379,7 @@ class _ShowcasePageState extends State<ShowcasePage> {
           label: 'Task Name',
           hint: 'Enter task name...',
           controller: _textController,
-          prefixIcon: Icons.task_alt,
+          prefixIcon: IconsaxPlusLinear.task_square,
         ),
         AppSpacing.gapVerticalMD,
         AppDropdownField<String>(
@@ -428,7 +432,7 @@ class _ShowcasePageState extends State<ShowcasePage> {
         ),
         AppSpacing.gapVerticalMD,
         TaskGroupCard(
-          icon: Icons.work_outline,
+          icon: IconsaxPlusLinear.briefcase,
           iconColor: AppColorPalette.categoryOrange,
           title: 'Office Project',
           taskCount: 12,
@@ -437,7 +441,7 @@ class _ShowcasePageState extends State<ShowcasePage> {
         ),
         AppSpacing.gapVerticalSM,
         TaskGroupCard(
-          icon: Icons.person_outline,
+          icon: IconsaxPlusLinear.user,
           iconColor: AppColorPalette.categoryPurple,
           title: 'Personal Tasks',
           taskCount: 8,

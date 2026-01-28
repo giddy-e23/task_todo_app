@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:iconsax_plus/iconsax_plus.dart';
 import 'core/theme/theme.dart';
 import 'feature/showcase/presentation/pages/showcase_page.dart';
 
@@ -117,7 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        child: const Icon(IconsaxPlusLinear.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }

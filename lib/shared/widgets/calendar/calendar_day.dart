@@ -52,47 +52,50 @@ class CalendarDayItem extends StatelessWidget {
       child: Container(
         width: 50,
         padding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.sm,
+          vertical: AppSpacing.xs,
           horizontal: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
           color: isSelected ? colors.primary : Colors.transparent,
           borderRadius: AppRadius.borderRadiusMD,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Month name (if provided)
-            if (monthName != null) ...[
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Month name (if provided)
+              if (monthName != null) ...[
+                Text(
+                  monthName!,
+                  style: AppTypography.labelSmall.copyWith(
+                    color: isSelected
+                        ? colors.onPrimary.withOpacity(0.7)
+                        : colors.textTertiary,
+                  ),
+                ),
+                const SizedBox(height: 1),
+              ],
+              // Day number
               Text(
-                monthName!,
-                style: AppTypography.labelSmall.copyWith(
+                dayNumber.toString(),
+                style: AppTypography.calendarDay.copyWith(
+                  color: isSelected ? colors.onPrimary : colors.textPrimary,
+                  fontWeight: isToday ? FontWeight.w700 : FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 1),
+              // Day name
+              Text(
+                dayName,
+                style: AppTypography.calendarWeekday.copyWith(
                   color: isSelected
                       ? colors.onPrimary.withOpacity(0.7)
                       : colors.textTertiary,
                 ),
               ),
-              const SizedBox(height: 2),
             ],
-            // Day number
-            Text(
-              dayNumber.toString(),
-              style: AppTypography.calendarDay.copyWith(
-                color: isSelected ? colors.onPrimary : colors.textPrimary,
-                fontWeight: isToday ? FontWeight.w700 : FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 2),
-            // Day name
-            Text(
-              dayName,
-              style: AppTypography.calendarWeekday.copyWith(
-                color: isSelected
-                    ? colors.onPrimary.withOpacity(0.7)
-                    : colors.textTertiary,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -182,12 +185,11 @@ class CalendarDayData {
       'Sep',
       'Oct',
       'Nov',
-      'Dec'
+      'Dec',
     ];
     final now = DateTime.now();
-    final isToday = date.year == now.year &&
-        date.month == now.month &&
-        date.day == now.day;
+    final isToday =
+        date.year == now.year && date.month == now.month && date.day == now.day;
 
     return CalendarDayData(
       dayNumber: date.day,

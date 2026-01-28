@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_plus/iconsax_plus.dart';
 import '../../../core/theme/theme.dart';
 
 /// Custom app text field with app styling.
@@ -229,7 +230,7 @@ class AppDropdownField<T> extends StatelessWidget {
                     onChanged: enabled ? onChanged : null,
                     isExpanded: true,
                     icon: Icon(
-                      Icons.keyboard_arrow_down,
+                      IconsaxPlusLinear.arrow_down_1,
                       color: colors.primary,
                     ),
                     style: AppTypography.bodyLarge.copyWith(
@@ -343,7 +344,7 @@ class AppDateField extends StatelessWidget {
             child: Row(
               children: [
                 Icon(
-                  Icons.calendar_today_outlined,
+                  IconsaxPlusLinear.calendar_1,
                   size: AppSizes.iconMD,
                   color: colors.primary,
                 ),
@@ -360,7 +361,7 @@ class AppDateField extends StatelessWidget {
                     ),
                   ),
                 ),
-                Icon(Icons.keyboard_arrow_down, color: colors.primary),
+                Icon(IconsaxPlusLinear.arrow_down_1, color: colors.primary),
               ],
             ),
           ),

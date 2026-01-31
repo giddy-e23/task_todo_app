@@ -11,6 +11,7 @@ export 'badges/status_badge.dart';
 
 // Buttons
 export 'buttons/app_button.dart';
+export 'buttons/slanted_stadium_border.dart';
 
 // Calendar
 export 'calendar/calendar_day.dart';

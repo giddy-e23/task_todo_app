@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/theme.dart';
+import 'slanted_stadium_border.dart';
 
 /// Button variants available in the app
 enum AppButtonVariant {
@@ -14,11 +15,7 @@ enum AppButtonVariant {
 }
 
 /// Button sizes
-enum AppButtonSize {
-  small,
-  medium,
-  large,
-}
+enum AppButtonSize { small, medium, large }
 
 /// A customizable button widget that follows the app's design system.
 ///
@@ -183,7 +180,7 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final effectiveRadius = borderRadius ?? AppRadius.md;
+    final effectiveRadius = borderRadius ?? AppRadius.xxl;
 
     Widget child = Row(
       mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
@@ -210,33 +207,40 @@ class AppButton extends StatelessWidget {
           Text(label),
         if ((showArrow || trailingIcon != null) && !isLoading) ...[
           SizedBox(width: AppSpacing.xs),
-          Icon(
-            showArrow ? Icons.arrow_forward : trailingIcon,
-            size: _iconSize,
-          ),
+          Icon(showArrow ? Icons.arrow_forward : trailingIcon, size: _iconSize),
         ],
       ],
     );
+
+    // Button shape parameters
+    const double tiltAmount = 0.05; // How much edges bulge outward
+    const double cornerRadius = 16.0; // Slightly curved corners
 
     switch (variant) {
       case AppButtonVariant.primary:
         return SizedBox(
           width: fullWidth ? double.infinity : null,
           height: _height,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              boxShadow: onPressed != null ? AppShadows.primaryGlow : null,
-              borderRadius: BorderRadius.circular(effectiveRadius),
+          child: CustomPaint(
+            painter: SlantedStadiumGlowPainter(
+              glowColor: colors.primary.withOpacity(0.35),
+              blurRadius: 12.0,
+              shadowOffset: const Offset(0, 6),
+              tiltAmount: tiltAmount,
+              cornerRadius: cornerRadius,
+              enabled: onPressed != null,
             ),
             child: ElevatedButton(
               onPressed: isLoading ? null : onPressed,
               style: ElevatedButton.styleFrom(
                 textStyle: _textStyle,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(effectiveRadius),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                shape: const SlantedStadiumBorder(
+                  tiltAmount: tiltAmount,
+                  cornerRadius: cornerRadius,
                 ),
               ),
-              child: child,
+              child: Center(child: child),
             ),
           ),
         );
@@ -249,11 +253,14 @@ class AppButton extends StatelessWidget {
             onPressed: isLoading ? null : onPressed,
             style: OutlinedButton.styleFrom(
               textStyle: _textStyle,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(effectiveRadius),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              shape: SlantedStadiumBorder(
+                tiltAmount: tiltAmount,
+                cornerRadius: cornerRadius,
+                side: BorderSide(color: colors.primary, width: 1.5),
               ),
             ),
-            child: child,
+            child: Center(child: child),
           ),
         );
 

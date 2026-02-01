@@ -260,8 +260,8 @@ class AppColorsDark {
   final Color statusTodoBackground = const Color(0xFF3D2514);
   final Color statusInProgress = AppColorPalette.primaryLight;
   final Color statusInProgressBackground = const Color(0xFF2D2647);
-  final Color statusDone = AppColorPalette.categoryGreen;
-  final Color statusDoneBackground = const Color(0xFF1B3D1F);
+  final Color statusDone = AppColorPalette.primary;
+  Color statusDoneBackground = AppColorPalette.primary.withValues(alpha: 0.2);
 
   // ============== Component Specific ==============
   final Color chipBackground = const Color(0xFF2A2A35);
@@ -281,7 +281,7 @@ class AppColorsDark {
   final Color shadow = const Color(0x40000000);
   final Color shadowLight = const Color(0x20000000);
 
-  const AppColorsDark();
+  AppColorsDark();
 }
 
 /// Main access point for app colors.
@@ -305,7 +305,7 @@ class AppColorsDark {
 /// ```
 class AppColors {
   static const AppColorsLight light = AppColorsLight();
-  static const AppColorsDark dark = AppColorsDark();
+  static  AppColorsDark dark = AppColorsDark();
 
   /// Get colors based on current theme brightness.
   ///

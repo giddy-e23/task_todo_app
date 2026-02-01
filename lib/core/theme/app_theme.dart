@@ -456,7 +456,7 @@ class AppTheme {
   // DARK THEME
   // ============================================================
   static ThemeData get darkTheme {
-    const colors = AppColorsDark();
+    var colors = AppColorsDark();
 
     return ThemeData(
       useMaterial3: true,

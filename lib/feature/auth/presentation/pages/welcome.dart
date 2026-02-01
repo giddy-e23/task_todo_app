@@ -28,17 +28,17 @@ class WelcomePage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   // Push content to bottom
-                  const Spacer(),
+                  // const Spacer(),
 
                   // Headline
                   Text(
-                    'Manage Your\nTask with DayTask',
+                    'Task Management &\nTo-Do List',
                     textAlign: TextAlign.center,
-                    style: AppTypography.displayLarge.copyWith(
+                    style: AppTypography.headlineSmall.copyWith(
                       color: colors.textPrimary,
-                      height: 1.2,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -47,7 +47,7 @@ class WelcomePage extends StatelessWidget {
                   Text(
                     'Organize, prioritize, and accomplish your\ntasks with ease. Start your productive journey.',
                     textAlign: TextAlign.center,
-                    style: AppTypography.bodyLarge.copyWith(
+                    style: AppTypography.bodyMedium.copyWith(
                       color: colors.textSecondary,
                       height: 1.5,
                     ),
@@ -58,6 +58,7 @@ class WelcomePage extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: AppButton(
+                      showArrow: true,
                       label: "Let's Start",
                       onPressed: () {
                         // TODO: Navigate to next page (login/home)

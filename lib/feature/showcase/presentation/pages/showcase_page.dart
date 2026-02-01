@@ -59,7 +59,6 @@ class _ShowcasePageState extends State<ShowcasePage> {
             _buildSection('Calendar Strip', _buildCalendarSection()),
             _buildSection('Avatars', _buildAvatarsSection()),
             _buildSection('Input Fields', _buildInputsSection()),
-            _buildSection('Task Cards', _buildCardsSection()),
             _buildSection('Progress Card', _buildProgressCardSection()),
             AppSpacing.gapVerticalXL,
           ],
@@ -404,71 +403,6 @@ class _ShowcasePageState extends State<ShowcasePage> {
     );
   }
 
-  Widget _buildCardsSection() {
-    return Column(
-      children: [
-        TaskCard(
-          category: 'Design System',
-          title: 'Create color palette and typography',
-          time: '10:00 AM',
-          status: TaskStatus.done,
-          onTap: () {},
-        ),
-        AppSpacing.gapVerticalSM,
-        TaskCard(
-          category: 'UI Development',
-          title: 'Build reusable UI components',
-          time: '2:30 PM',
-          status: TaskStatus.inProgress,
-          onTap: () {},
-        ),
-        AppSpacing.gapVerticalSM,
-        TaskCard(
-          category: 'Documentation',
-          title: 'Write widget usage documentation',
-          time: '4:00 PM',
-          status: TaskStatus.todo,
-          onTap: () {},
-        ),
-        AppSpacing.gapVerticalMD,
-        TaskGroupCard(
-          icon: IconsaxPlusLinear.briefcase,
-          iconColor: AppColorPalette.categoryOrange,
-          title: 'Office Project',
-          taskCount: 12,
-          progress: 0.67,
-          onTap: () {},
-        ),
-        AppSpacing.gapVerticalSM,
-        TaskGroupCard(
-          icon: IconsaxPlusLinear.user,
-          iconColor: AppColorPalette.categoryPurple,
-          title: 'Personal Tasks',
-          taskCount: 8,
-          progress: 0.25,
-          onTap: () {},
-        ),
-        AppSpacing.gapVerticalMD,
-        const Row(
-          children: [
-            Expanded(
-              child: InProgressCard(
-                projectName: 'Mobile App',
-                title: 'UI Development',
-              ),
-            ),
-            AppSpacing.gapHorizontalSM,
-            Expanded(
-              child: InProgressCard(
-                projectName: 'Web App',
-                title: 'Backend Integration',
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
 
   Widget _buildProgressCardSection() {
     return const ProgressSummaryCard(

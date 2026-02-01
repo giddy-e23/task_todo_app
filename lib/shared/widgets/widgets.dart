@@ -18,7 +18,6 @@ export 'calendar/calendar_day.dart';
 
 // Cards
 export 'cards/progress_card.dart';
-export 'cards/task_card.dart';
 
 // Chips
 export 'chips/filter_chip.dart';

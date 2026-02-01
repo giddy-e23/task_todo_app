@@ -65,7 +65,7 @@ class AppTypography {
     fontFamily: fontFamily,
     fontFamilyFallback: fontFamilyFallback,
     fontSize: 32,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w800,
     letterSpacing: 0,
     height: 1.25,
   );
@@ -75,7 +75,7 @@ class AppTypography {
     fontFamily: fontFamily,
     fontFamilyFallback: fontFamilyFallback,
     fontSize: 28,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w800,
     letterSpacing: 0,
     height: 1.29,
   );
@@ -85,7 +85,7 @@ class AppTypography {
     fontFamily: fontFamily,
     fontFamilyFallback: fontFamilyFallback,
     fontSize: 24,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w700,
     letterSpacing: 0,
     height: 1.33,
   );
@@ -137,7 +137,7 @@ class AppTypography {
     fontFamily: fontFamily,
     fontFamilyFallback: fontFamilyFallback,
     fontSize: 14,
-    fontWeight: FontWeight.w400,
+    fontWeight: FontWeight.w500,
     letterSpacing: 0.25,
     height: 1.43,
   );
@@ -299,7 +299,7 @@ class AppTypography {
     fontFamily: fontFamily,
     fontFamilyFallback: fontFamilyFallback,
     fontSize: 16,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w800,
     letterSpacing: 0.5,
     height: 1.5,
   );

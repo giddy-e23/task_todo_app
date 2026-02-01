@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:iconly/iconly.dart';
+import 'package:iconsax_plus/iconsax_plus.dart';
 import '../../../core/theme/theme.dart';
 import 'slanted_stadium_border.dart';
 
@@ -187,11 +189,14 @@ class AppButton extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (leadingIcon != null && !isLoading) ...[
-          Icon(leadingIcon, size: _iconSize),
-          SizedBox(width: AppSpacing.xs),
+          Column(children: [Icon(leadingIcon, size: _iconSize),
+          SizedBox(width: AppSpacing.xs),],)
+          
         ],
         if (isLoading)
-          SizedBox(
+         Expanded(
+          flex: 1,
+          child:  SizedBox(
             width: _iconSize,
             height: _iconSize,
             child: CircularProgressIndicator(
@@ -202,12 +207,17 @@ class AppButton extends StatelessWidget {
                     : colors.primary,
               ),
             ),
-          )
+          ))
         else
-          Text(label),
+          Expanded(
+            flex: 1,
+            child: Center(child: Text(label))),
         if ((showArrow || trailingIcon != null) && !isLoading) ...[
-          SizedBox(width: AppSpacing.xs),
-          Icon(showArrow ? Icons.arrow_forward : trailingIcon, size: _iconSize),
+         Column(
+           crossAxisAlignment: CrossAxisAlignment.end,
+           mainAxisAlignment: MainAxisAlignment.center,
+           children: [ SizedBox(width: AppSpacing.xs),
+         Icon(showArrow ? IconlyBold.arrow_right : trailingIcon, size: _iconSize),],)
         ],
       ],
     );

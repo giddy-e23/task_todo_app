@@ -69,7 +69,7 @@ class TaskGroup extends StatelessWidget {
               animateFromLastPercent: true,
               center: Text(
                 "${(progressPercent * 100).toInt()}%",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.0),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.0, color: AppColors.of(context).textPrimary),
               ),
 
               circularStrokeCap: CircularStrokeCap.round,

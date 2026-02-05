@@ -60,6 +60,21 @@ class AppButton extends StatelessWidget {
   /// Custom border radius
   final double? borderRadius;
 
+  /// Custom text style for the label
+  final TextStyle? textStyle;
+
+  /// Custom button background color (for primary variant)
+  final Color? backgroundColor;
+
+  /// Custom button border/text color (for secondary/text variants)
+  final Color? foregroundColor;
+
+  /// Custom button width (overrides fullWidth when set)
+  final double? width;
+
+  /// Custom button height (overrides size-based height when set)
+  final double? height;
+
   const AppButton({
     super.key,
     required this.label,
@@ -72,6 +87,11 @@ class AppButton extends StatelessWidget {
     this.fullWidth = true,
     this.isLoading = false,
     this.borderRadius,
+    this.textStyle,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.width,
+    this.height,
   });
 
   /// Creates a primary filled button
@@ -84,6 +104,11 @@ class AppButton extends StatelessWidget {
     IconData? leadingIcon,
     bool fullWidth = true,
     bool isLoading = false,
+    TextStyle? textStyle,
+    Color? backgroundColor,
+    Color? foregroundColor,
+    double? width,
+    double? height,
   }) {
     return AppButton(
       key: key,
@@ -95,6 +120,11 @@ class AppButton extends StatelessWidget {
       leadingIcon: leadingIcon,
       fullWidth: fullWidth,
       isLoading: isLoading,
+      textStyle: textStyle,
+      backgroundColor: backgroundColor,
+      foregroundColor: foregroundColor,
+      width: width,
+      height: height,
     );
   }
 
@@ -108,6 +138,11 @@ class AppButton extends StatelessWidget {
     IconData? leadingIcon,
     bool fullWidth = true,
     bool isLoading = false,
+    TextStyle? textStyle,
+    Color? backgroundColor,
+    Color? foregroundColor,
+    double? width,
+    double? height,
   }) {
     return AppButton(
       key: key,
@@ -119,6 +154,11 @@ class AppButton extends StatelessWidget {
       leadingIcon: leadingIcon,
       fullWidth: fullWidth,
       isLoading: isLoading,
+      textStyle: textStyle,
+      backgroundColor: backgroundColor,
+      foregroundColor: foregroundColor,
+      width: width,
+      height: height,
     );
   }
 
@@ -132,6 +172,10 @@ class AppButton extends StatelessWidget {
     IconData? leadingIcon,
     bool fullWidth = false,
     bool isLoading = false,
+    TextStyle? textStyle,
+    Color? foregroundColor,
+    double? width,
+    double? height,
   }) {
     return AppButton(
       key: key,
@@ -143,10 +187,15 @@ class AppButton extends StatelessWidget {
       leadingIcon: leadingIcon,
       fullWidth: fullWidth,
       isLoading: isLoading,
+      textStyle: textStyle,
+      foregroundColor: foregroundColor,
+      width: width,
+      height: height,
     );
   }
 
   double get _height {
+    if (height != null) return height!;
     switch (size) {
       case AppButtonSize.small:
         return AppSizes.buttonHeightSM;
@@ -158,6 +207,7 @@ class AppButton extends StatelessWidget {
   }
 
   TextStyle get _textStyle {
+    if (textStyle != null) return textStyle!;
     switch (size) {
       case AppButtonSize.small:
         return AppTypography.labelMedium;
@@ -166,6 +216,12 @@ class AppButton extends StatelessWidget {
       case AppButtonSize.large:
         return AppTypography.button;
     }
+  }
+
+  double? get _width {
+    if (width != null) return width;
+    if (fullWidth) return double.infinity;
+    return null;
   }
 
   double get _iconSize {
@@ -183,20 +239,19 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
     final effectiveRadius = borderRadius ?? AppRadius.xxl;
+    final effectiveBgColor = backgroundColor ?? colors.primary;
+    final effectiveFgColor = foregroundColor ?? colors.primary;
 
     Widget child = Row(
       mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (leadingIcon != null && !isLoading) ...[
-          Column(children: [Icon(leadingIcon, size: _iconSize),
-          SizedBox(width: AppSpacing.xs),],)
-          
+          Icon(leadingIcon, size: _iconSize),
+          SizedBox(width: AppSpacing.xs),
         ],
         if (isLoading)
-         Expanded(
-          flex: 1,
-          child:  SizedBox(
+          SizedBox(
             width: _iconSize,
             height: _iconSize,
             child: CircularProgressIndicator(
@@ -204,20 +259,15 @@ class AppButton extends StatelessWidget {
               valueColor: AlwaysStoppedAnimation<Color>(
                 variant == AppButtonVariant.primary
                     ? colors.onPrimary
-                    : colors.primary,
+                    : effectiveFgColor,
               ),
             ),
-          ))
+          )
         else
-          Expanded(
-            flex: 1,
-            child: Center(child: Text(label))),
+          Text(label),
         if ((showArrow || trailingIcon != null) && !isLoading) ...[
-         Column(
-           crossAxisAlignment: CrossAxisAlignment.end,
-           mainAxisAlignment: MainAxisAlignment.center,
-           children: [ SizedBox(width: AppSpacing.xs),
-         Icon(showArrow ? IconlyBold.arrow_right : trailingIcon, size: _iconSize),],)
+          SizedBox(width: AppSpacing.xs),
+          Icon(showArrow ? IconlyBold.arrow_right : trailingIcon, size: _iconSize),
         ],
       ],
     );
@@ -229,11 +279,11 @@ class AppButton extends StatelessWidget {
     switch (variant) {
       case AppButtonVariant.primary:
         return SizedBox(
-          width: fullWidth ? double.infinity : null,
+          width: _width,
           height: _height,
           child: CustomPaint(
             painter: SlantedStadiumGlowPainter(
-              glowColor: colors.primary.withOpacity(0.35),
+              glowColor: effectiveBgColor.withOpacity(0.35),
               blurRadius: 12.0,
               shadowOffset: const Offset(0, 6),
               tiltAmount: tiltAmount,
@@ -243,7 +293,11 @@ class AppButton extends StatelessWidget {
             child: ElevatedButton(
               onPressed: isLoading ? null : onPressed,
               style: ElevatedButton.styleFrom(
+                backgroundColor: effectiveBgColor,
+                foregroundColor: foregroundColor ?? colors.onPrimary,
                 textStyle: _textStyle,
+                minimumSize: fullWidth ? null : Size.zero,
+                tapTargetSize: fullWidth ? null : MaterialTapTargetSize.shrinkWrap,
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 shape: const SlantedStadiumBorder(
                   tiltAmount: tiltAmount,
@@ -257,17 +311,21 @@ class AppButton extends StatelessWidget {
 
       case AppButtonVariant.secondary:
         return SizedBox(
-          width: fullWidth ? double.infinity : null,
+          width: _width,
           height: _height,
           child: OutlinedButton(
             onPressed: isLoading ? null : onPressed,
             style: OutlinedButton.styleFrom(
+              backgroundColor: backgroundColor,
+              foregroundColor: effectiveFgColor,
               textStyle: _textStyle,
+              minimumSize: fullWidth ? null : Size.zero,
+              tapTargetSize: fullWidth ? null : MaterialTapTargetSize.shrinkWrap,
               padding: const EdgeInsets.symmetric(horizontal: 24),
               shape: SlantedStadiumBorder(
                 tiltAmount: tiltAmount,
                 cornerRadius: cornerRadius,
-                side: BorderSide(color: colors.primary, width: 1.5),
+                side: BorderSide(color: effectiveFgColor, width: 1.5),
               ),
             ),
             child: Center(child: child),
@@ -276,11 +334,15 @@ class AppButton extends StatelessWidget {
 
       case AppButtonVariant.text:
         return SizedBox(
+          width: _width,
           height: _height,
           child: TextButton(
             onPressed: isLoading ? null : onPressed,
             style: TextButton.styleFrom(
+              foregroundColor: effectiveFgColor,
               textStyle: _textStyle,
+              minimumSize: fullWidth ? null : Size.zero,
+              tapTargetSize: fullWidth ? null : MaterialTapTargetSize.shrinkWrap,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(effectiveRadius),
               ),

@@ -45,7 +45,7 @@ class WidgetsPage extends StatelessWidget {
           ),
       
           SizedBox(height: 20),
-          TaskCard(),
+          //TaskCard(),
         ],
       ),
     );

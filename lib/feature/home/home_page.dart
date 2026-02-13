@@ -22,37 +22,46 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       body: CustomAppBackground(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
 
-                // Header Section
-                _buildHeader(colors),
+              // Header Section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: _buildHeader(colors),
+              ),
 
-                const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-                // Task Overview Card
-                const TaskOverview(),
+              // Task Overview Card
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.0),
+                  child: TaskOverview(),
+                ),
 
                 const SizedBox(height: 28),
 
                 // In Progress Section
-                AppSectionBar(
-                  title: 'In Progress',
-                  count: 6,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: AppSectionBar(
+                    title: 'In Progress',
+                    count: 6,
+                  ),
                 ),
 
                 const SizedBox(height: 16),
 
-                // Horizontal scrolling task progress cards
+                // Horizontal scrolling task progress cards (edge-to-edge)
                 SizedBox(
                   height: 180,
                   child: ListView(
                     scrollDirection: Axis.horizontal,
                     clipBehavior: Clip.none,
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     children: [
                       TaskProgressCard(
                         backgroundColor: const Color(0xFFE8F4FD),
@@ -90,44 +99,46 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 28),
 
                 // Task Groups Section
-                AppSectionBar(
-                  title: 'Task Groups',
-                  count: 4,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: AppSectionBar(
+                    title: 'Task Groups',
+                    count: 4,
+                  ),
                 ),
 
                 const SizedBox(height: 16),
 
                 // Task Group List
-                TaskGroup(
-                  iconColor: const Color(0xFFF478B8),
-                  groupIcon: IconsaxPlusBold.briefcase,
-                  title: "Office Project",
-                  taskCount: 23,
-                  progressPercent: 0.70,
-                  progressColor: const Color(0xFFF478B8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: TaskGroup(
+                    iconColor: const Color(0xFFF478B8),
+                    groupIcon: IconsaxPlusBold.briefcase,
+                    title: "Office Project",
+                    taskCount: 23,
+                    progressPercent: 0.70,
+                    progressColor: const Color(0xFFF478B8),
+                  ),
                 ),
 
                 const SizedBox(height: 12),
 
-                TaskGroup(
-                  iconColor: const Color(0xFF9260F4),
-                  groupIcon: IconsaxPlusBold.user,
-                  title: "Personal Project",
-                  taskCount: 30,
-                  progressPercent: 0.52,
-                  progressColor: const Color(0xFF9260F4),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: TaskGroup(
+                    iconColor: const Color(0xFF9260F4),
+                    groupIcon: IconsaxPlusBold.user,
+                    title: "Personal Project",
+                    taskCount: 30,
+                    progressPercent: 0.52,
+                    progressColor: const Color(0xFF9260F4),
+                  ),
                 ),
 
                 const SizedBox(height: 12),
 
-                TaskGroup(
-                  iconColor: const Color(0xFFFF7D53),
-                  groupIcon: IconsaxPlusBold.book_1,
-                  title: "Daily Study",
-                  taskCount: 30,
-                  progressPercent: 0.87,
-                  progressColor: const Color(0xFFFF7D53),
-                ),
+               
 
                 // Add padding at bottom for nav bar
                 const SizedBox(height: 100),
@@ -135,7 +146,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
-      ),
     );
   }
 

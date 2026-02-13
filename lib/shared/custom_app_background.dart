@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:task_todo_app/core/theme/app_spacing.dart';
 
 class CustomAppBackground extends StatelessWidget {
   final Widget child;
-  const CustomAppBackground({super.key, required this.child});
+  final EdgeInsetsGeometry? padding;
+  
+  const CustomAppBackground({
+    super.key,
+    required this.child,
+    this.padding,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +26,12 @@ class CustomAppBackground extends StatelessWidget {
 
         // Content overlay
         SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-            child: child,
-          ),
+          child: padding != null
+              ? Padding(
+                  padding: padding!,
+                  child: child,
+                )
+              : child,
         ),
       ],
     );

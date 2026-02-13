@@ -90,6 +90,16 @@ class AppTypography {
     height: 1.33,
   );
 
+  /// Extra small headlines - subsection headers
+  static const TextStyle headlineXSmall = TextStyle(
+    fontFamily: fontFamily,
+    fontFamilyFallback: fontFamilyFallback,
+    fontSize: 20,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+    height: 1.33,
+  );
+
   // ============== Title Styles ==============
   /// Large titles - card titles, dialog titles
   static const TextStyle titleLarge = TextStyle(

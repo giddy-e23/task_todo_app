@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
 import 'package:task_todo_app/feature/home/home_page.dart';
+import 'package:task_todo_app/feature/projects/add_project_page.dart';
+import 'package:task_todo_app/feature/tasks/tasks_page.dart';
 import 'package:task_todo_app/shared/widgets/navigation/custom_bottom_nav.dart';
 
 class NavPage extends StatefulWidget {
@@ -14,7 +16,8 @@ class _NavPageState extends State<NavPage> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    HomePage()
+    const HomePage(),
+    const TasksPage(),
   ];
 
   @override
@@ -23,7 +26,10 @@ class _NavPageState extends State<NavPage> {
   extendBody: true,
    body: _pages[_currentIndex],
    floatingActionButton: AppFab(onTap: () {
-    // Handle FAB tap, e.g., navigate to task creation page
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddProjectPage()),
+    );
    }),
    floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
    bottomNavigationBar: CustomBottomNavBar(

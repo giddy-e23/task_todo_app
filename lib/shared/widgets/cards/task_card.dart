@@ -8,59 +8,96 @@ import 'package:task_todo_app/shared/widgets/badges/status_badge.dart';
 import 'package:task_todo_app/shared/widgets/badges/task_icon.dart';
 
 class TaskCard extends StatelessWidget {
-  const TaskCard({super.key});
+  final String projectName;
+  final String taskTitle;
+  final DateTime time;
+  final TaskStatus status;
+  final IconData? icon;
+  final Color iconColor;
+  final VoidCallback? onTap;
+
+  const TaskCard({
+    super.key,
+    required this.projectName,
+    required this.taskTitle,
+    required this.time,
+    required this.status,
+    this.icon,
+    this.iconColor = const Color(0xFF9260F4),
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: ShapeDecoration(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.0),
-        ),
-        color: Colors.white,
-      ),
-      
-      child: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text( "Design Team Meeting", style: AppTypography.titleMedium.copyWith(
-                color: AppColors.of(context).textPrimary,
-              ),),
-        
-              TaskIcon(groupIcon: IconsaxPlusBold.user_octagon, iconColor: Color(0xFF9260F4))
-        
-        
-            ],),
-          Row(
-            children: [
-              Text("Market Research", style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.of(context).textSecondary,
-              ),)
-            ],
-          ),
+    final colors = AppColors.of(context);
 
-          SizedBox(height: 4,),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: ShapeDecoration(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          color: colors.surface,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                spacing: 4,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                Icon(IconlyBold.time_circle, color: Color(0xFFAB94FF), size: 14,),
-                Text(DateFormat('h:mm a').format(DateTime.now()), style: AppTypography.bodyMedium.copyWith(
-                  color: Color(0xFFAB94FF),
-                ),)
-              ],),
-        
-              StatusBadge.done()
+                  Expanded(
+                    child: Text(
+                      projectName,
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  TaskIcon(
+                    groupIcon: icon ?? IconsaxPlusBold.briefcase,
+                    iconColor: iconColor,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                taskTitle,
+                style: AppTypography.titleMedium.copyWith(
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        IconlyBold.time_circle,
+                        color: const Color(0xFFAB94FF),
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        DateFormat('h:mm a').format(time),
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: const Color(0xFFAB94FF),
+                        ),
+                      ),
+                    ],
+                  ),
+                  StatusBadge(status: status),
+                ],
+              ),
             ],
-          )
-        ],
-            ),
-      ),);
+          ),
+        ),
+      ),
+    );
   }
 }

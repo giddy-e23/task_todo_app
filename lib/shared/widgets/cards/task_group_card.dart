@@ -49,7 +49,7 @@ class TaskGroup extends StatelessWidget {
                     ),
                     ),
                     Text(
-                      "$taskCount Tasks",
+                      taskCount == 1 ? "$taskCount Task" : "$taskCount Tasks",
                       style: AppTypography.bodyMedium.copyWith(
                       color: colors.textSecondary,
                       height: 1.5,

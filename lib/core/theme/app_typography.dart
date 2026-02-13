@@ -20,10 +20,11 @@ import 'package:flutter/material.dart';
 /// ```
 class AppTypography {
   // Font family from Figma design
-  static const String fontFamily = 'Manrope';
+  static const String fontFamily = 'Lexend Deca';
 
   // Fallback fonts
   static const List<String> fontFamilyFallback = [
+    'Manrope'
     'Roboto',
     'SF Pro Display',
     'Helvetica Neue',
@@ -84,8 +85,8 @@ class AppTypography {
   static const TextStyle headlineSmall = TextStyle(
     fontFamily: fontFamily,
     fontFamilyFallback: fontFamilyFallback,
-    fontSize: 24,
-    fontWeight: FontWeight.w700,
+    fontSize: 19,
+    fontWeight: FontWeight.w600,
     letterSpacing: 0,
     height: 1.33,
   );
@@ -152,6 +153,16 @@ class AppTypography {
     height: 1.43,
   );
 
+   /// Medium body light text - secondary content
+  static const TextStyle bodyMediumLight = TextStyle(
+    fontFamily: fontFamily,
+    fontFamilyFallback: fontFamilyFallback,
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0.25,
+    height: 1.43,
+  );
+
   /// Small body text - captions, timestamps
   static const TextStyle bodySmall = TextStyle(
     fontFamily: fontFamily,
@@ -177,7 +188,7 @@ class AppTypography {
   static const TextStyle labelMedium = TextStyle(
     fontFamily: fontFamily,
     fontFamilyFallback: fontFamilyFallback,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.5,
     height: 1.33,
@@ -187,8 +198,8 @@ class AppTypography {
   static const TextStyle labelSmall = TextStyle(
     fontFamily: fontFamily,
     fontFamilyFallback: fontFamilyFallback,
-    fontSize: 11,
-    fontWeight: FontWeight.w500,
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
     letterSpacing: 0.5,
     height: 1.45,
   );
@@ -269,7 +280,7 @@ class AppTypography {
     fontFamily: fontFamily,
     fontFamilyFallback: fontFamilyFallback,
     fontSize: 10,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w400,
     letterSpacing: 0.5,
     height: 1.4,
   );

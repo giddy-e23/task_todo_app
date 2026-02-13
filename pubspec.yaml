@@ -90,6 +90,16 @@ flutter:
         - asset: fonts/Manrope-Light.ttf
         - asset: fonts/Manrope-Medium.ttf
         - asset: fonts/Manrope-SemiBold.ttf
+    - family: Lexend Deca
+      fonts:    
+        - asset: fonts/LexendDeca-Regular.ttf
+        - asset: fonts/LexendDeca-Black.ttf
+        - asset: fonts/LexendDeca-Bold.ttf
+        - asset: fonts/LexendDeca-ExtraBold.ttf
+        - asset: fonts/LexendDeca-ExtraLight.ttf
+        - asset: fonts/LexendDeca-Light.ttf
+        - asset: fonts/LexendDeca-Medium.ttf
+        - asset: fonts/LexendDeca-SemiBold.ttf
   #       - asset: fonts/Manrope-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro

@@ -1,113 +1,118 @@
-import 'package:isar/isar.dart';
+import 'dart:io';
+
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 
-import 'collections/collections.dart';
+import 'tables/tables.dart';
 
-/// Database manager for the app
-/// Handles Isar initialization and provides access to collections
-class AppDatabase {
-  static Isar? _instance;
+part 'app_database.g.dart';
+
+/// Database manager for the app using Drift
+@DriftDatabase(tables: [Statuses, Users, TaskGroups, Tasks])
+class AppDatabase extends _$AppDatabase {
+  static AppDatabase? _instance;
   static const _uuid = Uuid();
 
-  /// Get the Isar instance (must be initialized first)
-  static Isar get instance {
-    if (_instance == null) {
-      throw StateError('Database not initialized. Call AppDatabase.initialize() first.');
-    }
+  AppDatabase._() : super(_openConnection());
+
+  /// Get the singleton database instance
+  static AppDatabase get instance {
+    _instance ??= AppDatabase._();
     return _instance!;
   }
 
   /// Check if database is initialized
   static bool get isInitialized => _instance != null;
 
-  /// Initialize the database
-  /// Call this in main() before runApp()
-  static Future<void> initialize() async {
-    if (_instance != null) return;
+  @override
+  int get schemaVersion => 1;
 
-    final dir = await getApplicationDocumentsDirectory();
-    
-    _instance = await Isar.open(
-      [
-        StatusCollectionSchema,
-        UserCollectionSchema,
-        TaskGroupCollectionSchema,
-        TaskCollectionSchema,
-      ],
-      directory: dir.path,
-      name: 'task_todo_db',
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll();
+        // Seed default statuses after table creation
+        await _seedDefaultStatuses();
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        // Handle migrations here
+      },
     );
-
-    // Seed default statuses if empty
-    await _seedDefaultStatuses();
   }
 
   /// Seed default statuses on first run
-  static Future<void> _seedDefaultStatuses() async {
-    final statusCount = await _instance!.statusCollections.count();
-    if (statusCount > 0) return;
+  Future<void> _seedDefaultStatuses() async {
+    final statusCount = await (select(statuses)..limit(1)).get();
+    if (statusCount.isNotEmpty) return;
 
     final now = DateTime.now();
-    final statuses = [
-      StatusCollection()
-        ..serverId = _uuid.v4()
-        ..name = 'To Do'
-        ..description = 'Tasks that need to be started'
-        ..hexColor = '#6B7280'
-        ..displayOrder = 1
-        ..createdAt = now
-        ..updatedAt = now
-        ..syncStatus = SyncStatus.synced,
-      StatusCollection()
-        ..serverId = _uuid.v4()
-        ..name = 'In Progress'
-        ..description = 'Tasks currently being worked on'
-        ..hexColor = '#F59E0B'
-        ..displayOrder = 2
-        ..createdAt = now
-        ..updatedAt = now
-        ..syncStatus = SyncStatus.synced,
-      StatusCollection()
-        ..serverId = _uuid.v4()
-        ..name = 'Done'
-        ..description = 'Completed tasks'
-        ..hexColor = '#10B981'
-        ..displayOrder = 3
-        ..createdAt = now
-        ..updatedAt = now
-        ..syncStatus = SyncStatus.synced,
-      StatusCollection()
-        ..serverId = _uuid.v4()
-        ..name = 'Canceled'
-        ..description = 'Canceled tasks'
-        ..hexColor = '#EF4444'
-        ..displayOrder = 4
-        ..createdAt = now
-        ..updatedAt = now
-        ..syncStatus = SyncStatus.synced,
+    final defaultStatuses = [
+      StatusesCompanion.insert(
+        serverId: _uuid.v4(),
+        name: 'To Do',
+        description: const Value('Tasks that need to be started'),
+        hexColor: '#6B7280',
+        displayOrder: 1,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      StatusesCompanion.insert(
+        serverId: _uuid.v4(),
+        name: 'In Progress',
+        description: const Value('Tasks currently being worked on'),
+        hexColor: '#F59E0B',
+        displayOrder: 2,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      StatusesCompanion.insert(
+        serverId: _uuid.v4(),
+        name: 'Done',
+        description: const Value('Completed tasks'),
+        hexColor: '#10B981',
+        displayOrder: 3,
+        createdAt: now,
+        updatedAt: now,
+      ),
+      StatusesCompanion.insert(
+        serverId: _uuid.v4(),
+        name: 'Canceled',
+        description: const Value('Canceled tasks'),
+        hexColor: '#EF4444',
+        displayOrder: 4,
+        createdAt: now,
+        updatedAt: now,
+      ),
     ];
 
-    await _instance!.writeTxn(() async {
-      await _instance!.statusCollections.putAll(statuses);
+    await batch((batch) {
+      batch.insertAll(statuses, defaultStatuses);
     });
   }
 
-  /// Close the database
-  static Future<void> close() async {
+  /// Re-seed statuses (for use after initialization)
+  Future<void> ensureDefaultStatuses() async {
+    await _seedDefaultStatuses();
+  }
+
+  /// Close the database and reset singleton
+  static Future<void> closeDatabase() async {
     await _instance?.close();
     _instance = null;
   }
 
-  /// Clear all data (for testing or logout)
-  static Future<void> clearAll() async {
-    await _instance?.writeTxn(() async {
-      await _instance!.clear();
-    });
-    // Re-seed statuses
-    await _seedDefaultStatuses();
-  }
-
   /// Generate a new UUID
   static String generateId() => _uuid.v4();
+}
+
+LazyDatabase _openConnection() {
+  return LazyDatabase(() async {
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dbFolder.path, 'task_todo_db.sqlite'));
+    return NativeDatabase.createInBackground(file);
+  });
 }

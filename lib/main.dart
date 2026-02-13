@@ -8,11 +8,16 @@ import 'core/theme/theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize database
-  await AppDatabase.initialize();
+  // Initialize database (triggers lazy initialization and runs migrations)
+  // The database will seed default statuses on first run
+  final _ = AppDatabase.instance;
 
   // Initialize dependency injection
   await initializeDependencies();
+
+  // Seed initial data for new users (guest mode)
+  final seeder = DataSeeder();
+  await seeder.seedInitialData();
 
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(

@@ -6,44 +6,64 @@ import 'package:task_todo_app/core/theme/app_typography.dart';
 import 'package:task_todo_app/shared/widgets/buttons/app_button.dart';
 
 class TaskOverview extends StatelessWidget {
-  const TaskOverview({super.key});
+  final int completedTasks;
+  final int totalTasks;
+  final VoidCallback? onViewTasks;
+
+  const TaskOverview({
+    super.key,
+    this.completedTasks = 0,
+    this.totalTasks = 0,
+    this.onViewTasks,
+  });
+
+  double get _progressPercent {
+    if (totalTasks == 0) return 0.0;
+    return (completedTasks / totalTasks).clamp(0.0, 1.0);
+  }
+
+  String get _statusMessage {
+    if (totalTasks == 0) return "No tasks yet!\nAdd your first task";
+    if (_progressPercent >= 1.0) return "Amazing work!\nAll tasks done!";
+    if (_progressPercent >= 0.7) return "Your today's task\nalmost done!";
+    if (_progressPercent >= 0.3) return "Keep going!\nYou're on track";
+    return "Let's get started!\n$totalTasks tasks waiting";
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(22),
+      padding: const EdgeInsets.all(22),
       decoration: ShapeDecoration(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), 
-        color: AppColors.of(context).chipSelectedBackground
-        //color: Colors.black
-        
-        ),
+        color: AppColors.of(context).chipSelectedBackground,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
-
         children: [
           Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Your today's task\nalmost done!", 
-              softWrap: true,
-              maxLines: 2,
-              style: AppTypography.titleSmall.copyWith(
-                fontWeight: FontWeight.w400,
-                color: AppColors.light.textOnPrimary,
-                
-              ),),
+              Text(
+                _statusMessage, 
+                softWrap: true,
+                maxLines: 2,
+                style: AppTypography.titleSmall.copyWith(
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.light.textOnPrimary,
+                ),
+              ),
               const SizedBox(height: 16),
              
               AppButton.primary(
                 label: "View Task", 
                 backgroundColor: AppColors.light.background,
                 foregroundColor: AppColors.light.borderFocused,
-              onPressed: () {}, 
-              fullWidth: false, 
-             size: AppButtonSize.small,
+                onPressed: onViewTasks ?? () {}, 
+                fullWidth: false, 
+                size: AppButtonSize.small,
               )
             ],
           ),
@@ -54,19 +74,24 @@ class TaskOverview extends StatelessWidget {
               CircularPercentIndicator(
                 progressColor: AppColors.of(context).textOnPrimary,
                 backgroundColor: Colors.white.withValues(alpha: 0.3),
-              radius: 38.0,
-              lineWidth: 8.0,
-              animation: true,
-              animationDuration: 3000,
-              percent: 0.85,
-              circularStrokeCap: CircularStrokeCap.round,
-              animateFromLastPercent: false,
-              reverse: true,
-              center: Text(
-                "${(0.85 * 100).toInt()}%",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14.0, color: AppColors.light.textOnPrimary),
+                radius: 38.0,
+                lineWidth: 8.0,
+                animation: true,
+                animationDuration: 1500,
+                percent: _progressPercent,
+                circularStrokeCap: CircularStrokeCap.round,
+                animateFromLastPercent: false,
+                reverse: true,
+                center: Text(
+                  "${(_progressPercent * 100).toInt()}%",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold, 
+                    fontSize: 14.0, 
+                    color: AppColors.light.textOnPrimary,
+                  ),
+                ),
               ),
-          )],
+            ],
           ),
 
           Column(

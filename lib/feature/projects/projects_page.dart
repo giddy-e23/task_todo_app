@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
+import 'package:task_todo_app/core/database/database.dart';
+import 'package:task_todo_app/core/di/injection.dart';
 import 'package:task_todo_app/core/theme/app_colors.dart';
 import 'package:task_todo_app/core/theme/app_typography.dart';
 import 'package:task_todo_app/shared/custom_app_background.dart';
@@ -20,91 +22,100 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
   final List<String> _filterTabs = ['All', 'Active', 'Completed'];
 
-  // Sample project data
-  final List<Map<String, dynamic>> _projects = [
-    {
-      'title': 'Grocery shopping app design',
-      'category': 'Mobile App',
-      'icon': IconsaxPlusBold.mobile,
-      'iconColor': const Color(0xFFF478B8),
-      'backgroundColor': const Color(0xFFFFF0F7),
-      'progressPercent': 0.75,
-      'progressColor': const Color(0xFFF478B8),
-      'taskCount': 12,
-      'completedTasks': 9,
-      'isCompleted': false,
-    },
-    {
-      'title': 'Uber Eats redesign challenge',
-      'category': 'UI/UX Design',
-      'icon': IconsaxPlusBold.brush_1,
-      'iconColor': const Color(0xFF9260F4),
-      'backgroundColor': const Color(0xFFF3EFFF),
-      'progressPercent': 0.45,
-      'progressColor': const Color(0xFF9260F4),
-      'taskCount': 8,
-      'completedTasks': 4,
-      'isCompleted': false,
-    },
-    {
-      'title': 'About design sprint',
-      'category': 'Learning',
-      'icon': IconsaxPlusBold.book_1,
-      'iconColor': const Color(0xFFFF7D53),
-      'backgroundColor': const Color(0xFFFFF0EB),
-      'progressPercent': 0.30,
-      'progressColor': const Color(0xFFFF7D53),
-      'taskCount': 5,
-      'completedTasks': 2,
-      'isCompleted': false,
-    },
-    {
-      'title': 'Portfolio website',
-      'category': 'Web Development',
-      'icon': IconsaxPlusBold.code,
-      'iconColor': const Color(0xFF0ECC5A),
-      'backgroundColor': const Color(0xFFE8FAF0),
-      'progressPercent': 1.0,
-      'progressColor': const Color(0xFF0ECC5A),
-      'taskCount': 10,
-      'completedTasks': 10,
-      'isCompleted': true,
-    },
-    {
-      'title': 'Brand identity design',
-      'category': 'Branding',
-      'icon': IconsaxPlusBold.magicpen,
-      'iconColor': const Color(0xFF5F33E1),
-      'backgroundColor': const Color(0xFFEDE8FB),
-      'progressPercent': 1.0,
-      'progressColor': const Color(0xFF5F33E1),
-      'taskCount': 6,
-      'completedTasks': 6,
-      'isCompleted': true,
-    },
-  ];
+  User? _currentUser;
+  List<TaskGroup> _groups = [];
+  List<Task> _allTasks = [];
+  List<Statuse> _statuses = [];
+  bool _isLoading = true;
 
-  List<Map<String, dynamic>> get _filteredProjects {
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final user = await userRepository.getCurrentUser();
+    if (user == null) return;
+
+    final statuses = await statusRepository.getAll();
+    final groups = await taskGroupRepository.getAllForUser(user.serverId);
+    final tasks = await taskRepository.getAllForUser(user.serverId);
+
+    if (mounted) {
+      setState(() {
+        _currentUser = user;
+        _statuses = statuses;
+        _groups = groups;
+        _allTasks = tasks;
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<_ProjectData> get _projects {
+    final doneStatus = _statuses.where((s) => s.name == 'Done').firstOrNull;
+
+    return _groups.map((group) {
+      final groupTasks = _allTasks.where((t) => t.groupServerId == group.serverId).toList();
+      final completedTasks = doneStatus != null
+          ? groupTasks.where((t) => t.statusServerId == doneStatus.serverId).length
+          : 0;
+      final taskCount = groupTasks.length;
+      final progress = taskCount > 0 ? completedTasks / taskCount : 0.0;
+      final isCompleted = taskCount > 0 && completedTasks == taskCount;
+
+      return _ProjectData(
+        group: group,
+        taskCount: taskCount,
+        completedTasks: completedTasks,
+        progressPercent: progress,
+        isCompleted: isCompleted,
+      );
+    }).toList();
+  }
+
+  List<_ProjectData> get _filteredProjects {
     var filtered = _projects;
 
     // Filter by status
     if (_selectedFilterIndex == 1) {
-      filtered = filtered.where((p) => !p['isCompleted']).toList();
+      filtered = filtered.where((p) => !p.isCompleted).toList();
     } else if (_selectedFilterIndex == 2) {
-      filtered = filtered.where((p) => p['isCompleted']).toList();
+      filtered = filtered.where((p) => p.isCompleted).toList();
     }
 
     // Filter by search query
     final query = _searchController.text.toLowerCase();
     if (query.isNotEmpty) {
       filtered = filtered
-          .where((p) =>
-              p['title'].toLowerCase().contains(query) ||
-              p['category'].toLowerCase().contains(query))
+          .where((p) => p.group.name.toLowerCase().contains(query))
           .toList();
     }
 
     return filtered;
+  }
+
+  Color _parseHexColor(String hex) {
+    final buffer = StringBuffer();
+    if (hex.length == 6 || hex.length == 7) buffer.write('ff');
+    buffer.write(hex.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
+
+  IconData _getIconForGroup(String? iconName) {
+    switch (iconName) {
+      case 'briefcase':
+        return IconsaxPlusBold.briefcase;
+      case 'user':
+        return IconsaxPlusBold.user;
+      case 'palette':
+        return IconsaxPlusBold.paintbucket;
+      case 'book':
+        return IconsaxPlusBold.book_1;
+      default:
+        return IconsaxPlusBold.folder_2;
+    }
   }
 
   @override
@@ -116,6 +127,16 @@ class _ProjectsPageState extends State<ProjectsPage> {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
+
+    if (_isLoading) {
+      return Scaffold(
+        body: CustomAppBackground(
+          child: Center(
+            child: CircularProgressIndicator(color: colors.primary),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       body: CustomAppBackground(
@@ -174,19 +195,45 @@ class _ProjectsPageState extends State<ProjectsPage> {
               // Projects list
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: _filteredProjects
-                      .map((project) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _buildProjectCard(project, colors),
-                          ))
-                      .toList(),
-                ),
+                child: _filteredProjects.isEmpty
+                    ? _buildEmptyState(colors)
+                    : Column(
+                        children: _filteredProjects
+                            .map((project) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: _buildProjectCard(project, colors),
+                                ))
+                            .toList(),
+                      ),
               ),
 
               const SizedBox(height: 100), // Bottom padding for nav bar
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(AppColorsLight colors) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              IconsaxPlusLinear.folder_2,
+              size: 48,
+              color: colors.textTertiary,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No projects yet',
+              style: AppTypography.bodyLarge.copyWith(
+                color: colors.textSecondary,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -222,11 +269,9 @@ class _ProjectsPageState extends State<ProjectsPage> {
     );
   }
 
-  Widget _buildProjectCard(Map<String, dynamic> project, AppColorsLight colors) {
-    final int taskCount = project['taskCount'];
-    final int completedTasks = project['completedTasks'];
-    final double progress = project['progressPercent'];
-    final bool isCompleted = project['isCompleted'];
+  Widget _buildProjectCard(_ProjectData project, AppColorsLight colors) {
+    final groupColor = _parseHexColor(project.group.hexColor);
+    final backgroundColor = groupColor.withOpacity(0.15);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -248,12 +293,12 @@ class _ProjectsPageState extends State<ProjectsPage> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: project['backgroundColor'],
+              color: backgroundColor,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              project['icon'],
-              color: project['iconColor'],
+              _getIconForGroup(project.group.icon),
+              color: groupColor,
               size: 24,
             ),
           ),
@@ -266,7 +311,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  project['title'],
+                  project.group.name,
                   style: AppTypography.titleMedium.copyWith(
                     color: colors.textPrimary,
                   ),
@@ -274,31 +319,11 @@ class _ProjectsPageState extends State<ProjectsPage> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text(
-                      project['category'],
-                      style: AppTypography.bodySmall.copyWith(
-                        color: colors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 4,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: colors.textTertiary,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '$completedTasks/$taskCount Tasks',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: colors.textSecondary,
-                      ),
-                    ),
-                  ],
+                Text(
+                  '${project.completedTasks}/${project.taskCount} Tasks',
+                  style: AppTypography.bodySmall.copyWith(
+                    color: colors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 // Progress bar
@@ -308,20 +333,18 @@ class _ProjectsPageState extends State<ProjectsPage> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
-                          value: progress,
+                          value: project.progressPercent,
                           backgroundColor: colors.surfaceVariant,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            project['progressColor'],
-                          ),
+                          valueColor: AlwaysStoppedAnimation<Color>(groupColor),
                           minHeight: 6,
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      '${(progress * 100).toInt()}%',
+                      '${(project.progressPercent * 100).toInt()}%',
                       style: AppTypography.labelSmall.copyWith(
-                        color: isCompleted
+                        color: project.isCompleted
                             ? colors.success
                             : colors.textSecondary,
                         fontWeight: FontWeight.w600,
@@ -345,4 +368,20 @@ class _ProjectsPageState extends State<ProjectsPage> {
       ),
     );
   }
+}
+
+class _ProjectData {
+  final TaskGroup group;
+  final int taskCount;
+  final int completedTasks;
+  final double progressPercent;
+  final bool isCompleted;
+
+  _ProjectData({
+    required this.group,
+    required this.taskCount,
+    required this.completedTasks,
+    required this.progressPercent,
+    required this.isCompleted,
+  });
 }

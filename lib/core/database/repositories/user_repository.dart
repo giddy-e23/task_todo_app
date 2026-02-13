@@ -1,42 +1,39 @@
-import 'package:isar/isar.dart';
+import 'package:drift/drift.dart';
 
 import '../app_database.dart';
-import '../collections/collections.dart';
+import '../tables/tables.dart';
 
 /// Repository for user operations
 /// Manages local user profile for offline-first functionality
 class UserRepository {
-  Isar get _db => AppDatabase.instance;
+  AppDatabase get _db => AppDatabase.instance;
 
   /// Get the current logged-in user (local profile)
   /// Returns the first user in the database (single-user local mode)
-  Future<UserCollection?> getCurrentUser() async {
-    return _db.userCollections.where().findFirst();
+  Future<User?> getCurrentUser() async {
+    return (_db.select(_db.users)..limit(1)).getSingleOrNull();
   }
 
   /// Get user by ID
-  Future<UserCollection?> getById(int id) async {
-    return _db.userCollections.get(id);
+  Future<User?> getById(int id) async {
+    return (_db.select(_db.users)..where((u) => u.id.equals(id)))
+        .getSingleOrNull();
   }
 
   /// Get user by server ID
-  Future<UserCollection?> getByServerId(String serverId) async {
-    return _db.userCollections
-        .where()
-        .serverIdEqualTo(serverId)
-        .findFirst();
+  Future<User?> getByServerId(String serverId) async {
+    return (_db.select(_db.users)..where((u) => u.serverId.equals(serverId)))
+        .getSingleOrNull();
   }
 
   /// Get user by email
-  Future<UserCollection?> getByEmail(String email) async {
-    return _db.userCollections
-        .where()
-        .emailEqualTo(email)
-        .findFirst();
+  Future<User?> getByEmail(String email) async {
+    return (_db.select(_db.users)..where((u) => u.email.equals(email)))
+        .getSingleOrNull();
   }
 
   /// Create or update local user profile (from server sync or offline creation)
-  Future<UserCollection> createOrUpdate({
+  Future<User> createOrUpdate({
     required String serverId,
     required String firstName,
     required String lastName,
@@ -48,129 +45,117 @@ class UserRepository {
     final now = DateTime.now();
     
     // Check if user exists
-    var user = await getByServerId(serverId);
+    final existing = await getByServerId(serverId);
     
-    if (user == null) {
+    if (existing == null) {
       // Create new user
-      user = UserCollection()
-        ..serverId = serverId
-        ..firstName = firstName
-        ..lastName = lastName
-        ..email = email
-        ..phoneNumber = phoneNumber
-        ..profilePictureUrl = profilePictureUrl
-        ..emailVerifiedAt = emailVerifiedAt
-        ..createdAt = now
-        ..updatedAt = now
-        ..syncStatus = SyncStatus.synced;
+      final id = await _db.into(_db.users).insert(UsersCompanion.insert(
+        serverId: serverId,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        phoneNumber: Value(phoneNumber),
+        profilePictureUrl: Value(profilePictureUrl),
+        emailVerifiedAt: Value(emailVerifiedAt),
+        createdAt: now,
+        updatedAt: now,
+        syncStatus: const Value(SyncStatus.synced),
+      ));
+      return (await getById(id))!;
     } else {
       // Update existing user
-      user
-        ..firstName = firstName
-        ..lastName = lastName
-        ..email = email
-        ..phoneNumber = phoneNumber
-        ..profilePictureUrl = profilePictureUrl
-        ..emailVerifiedAt = emailVerifiedAt
-        ..updatedAt = now;
+      await (_db.update(_db.users)..where((u) => u.id.equals(existing.id)))
+          .write(UsersCompanion(
+        firstName: Value(firstName),
+        lastName: Value(lastName),
+        email: Value(email),
+        phoneNumber: Value(phoneNumber),
+        profilePictureUrl: Value(profilePictureUrl),
+        emailVerifiedAt: Value(emailVerifiedAt),
+        updatedAt: Value(now),
+      ));
+      return (await getById(existing.id))!;
     }
-
-    await _db.writeTxn(() async {
-      await _db.userCollections.put(user!);
-    });
-
-    return user;
   }
 
   /// Update user profile locally
-  Future<UserCollection> updateProfile(
-    UserCollection user, {
+  Future<User> updateProfile(
+    User user, {
     String? firstName,
     String? lastName,
     String? phoneNumber,
     String? profilePictureUrl,
   }) async {
-    if (firstName != null) user.firstName = firstName;
-    if (lastName != null) user.lastName = lastName;
-    if (phoneNumber != null) user.phoneNumber = phoneNumber;
-    if (profilePictureUrl != null) user.profilePictureUrl = profilePictureUrl;
+    await (_db.update(_db.users)..where((u) => u.id.equals(user.id))).write(
+      UsersCompanion(
+        firstName: firstName != null ? Value(firstName) : const Value.absent(),
+        lastName: lastName != null ? Value(lastName) : const Value.absent(),
+        phoneNumber: phoneNumber != null ? Value(phoneNumber) : const Value.absent(),
+        profilePictureUrl: profilePictureUrl != null ? Value(profilePictureUrl) : const Value.absent(),
+        updatedAt: Value(DateTime.now()),
+        syncStatus: const Value(SyncStatus.pending),
+      ),
+    );
 
-    user.updatedAt = DateTime.now();
-    user.syncStatus = SyncStatus.pending;
-
-    await _db.writeTxn(() async {
-      await _db.userCollections.put(user);
-    });
-
-    return user;
+    return (await getById(user.id))!;
   }
 
   /// Delete user (for logout)
   Future<bool> delete(int id) async {
-    return _db.writeTxn(() async {
-      return _db.userCollections.delete(id);
-    });
+    final count = await (_db.delete(_db.users)..where((u) => u.id.equals(id))).go();
+    return count > 0;
   }
 
   /// Delete all users (for logout/clear data)
   Future<void> deleteAll() async {
-    await _db.writeTxn(() async {
-      await _db.userCollections.clear();
-    });
+    await _db.delete(_db.users).go();
   }
 
   /// Watch current user (reactive)
-  Stream<UserCollection?> watchCurrentUser() {
-    return _db.userCollections
-        .where()
-        .watch(fireImmediately: true)
-        .map((users) => users.isNotEmpty ? users.first : null);
+  Stream<User?> watchCurrentUser() {
+    return (_db.select(_db.users)..limit(1))
+        .watchSingleOrNull();
   }
 
   /// Check if user is logged in (has local profile)
   Future<bool> isLoggedIn() async {
-    final count = await _db.userCollections.count();
+    final count = await _db.users.count().getSingle();
     return count > 0;
   }
 
   /// Get user with pending sync
-  Future<List<UserCollection>> getPendingSync() async {
-    return _db.userCollections
-        .where()
-        .filter()
-        .syncStatusEqualTo(SyncStatus.pending)
-        .findAll();
+  Future<List<User>> getPendingSync() async {
+    return (_db.select(_db.users)
+          ..where((u) => u.syncStatus.equalsValue(SyncStatus.pending)))
+        .get();
   }
 
   /// Mark user as synced
-  Future<void> markSynced(UserCollection user) async {
-    user.syncStatus = SyncStatus.synced;
-    user.lastSyncedAt = DateTime.now();
-
-    await _db.writeTxn(() async {
-      await _db.userCollections.put(user);
-    });
+  Future<void> markSynced(User user) async {
+    await (_db.update(_db.users)..where((u) => u.id.equals(user.id))).write(
+      UsersCompanion(
+        syncStatus: const Value(SyncStatus.synced),
+        lastSyncedAt: Value(DateTime.now()),
+      ),
+    );
   }
 
   /// Create a guest/offline user
-  Future<UserCollection> createGuestUser({
+  Future<User> createGuestUser({
     String firstName = 'Guest',
     String lastName = 'User',
   }) async {
     final now = DateTime.now();
-    final user = UserCollection()
-      ..serverId = AppDatabase.generateId()
-      ..firstName = firstName
-      ..lastName = lastName
-      ..email = 'guest@local.device'
-      ..createdAt = now
-      ..updatedAt = now
-      ..syncStatus = SyncStatus.pending;
+    final id = await _db.into(_db.users).insert(UsersCompanion.insert(
+      serverId: AppDatabase.generateId(),
+      firstName: firstName,
+      lastName: lastName,
+      email: 'guest@local.device',
+      createdAt: now,
+      updatedAt: now,
+      syncStatus: const Value(SyncStatus.pending),
+    ));
 
-    await _db.writeTxn(() async {
-      await _db.userCollections.put(user);
-    });
-
-    return user;
+    return (await getById(id))!;
   }
 }

@@ -44,8 +44,9 @@ dependencies:
   intl: ^0.20.2
 
   # Database
-  isar: ^3.1.0+1
-  isar_flutter_libs: ^3.1.0+1
+  drift: ^2.18.0
+  sqlite3_flutter_libs: ^0.5.21
+  path: ^1.9.0
 
   # Utilities
   uuid: ^4.5.1
@@ -64,7 +65,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
   # Code generation
-  isar_generator: ^3.1.0+1
+  drift_dev: ^2.18.0
   build_runner: ^2.4.13
 
 # For information on the generic Dart part of this file, see the

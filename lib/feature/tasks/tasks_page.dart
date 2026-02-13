@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
+import 'package:task_todo_app/core/database/database.dart';
+import 'package:task_todo_app/core/di/injection.dart';
 import 'package:task_todo_app/core/theme/app_colors.dart';
 import 'package:task_todo_app/core/theme/app_typography.dart';
 import 'package:task_todo_app/shared/custom_app_background.dart';
 import 'package:task_todo_app/shared/widgets/badges/status_badge.dart';
-import 'package:task_todo_app/shared/widgets/buttons/app_button.dart';
 import 'package:task_todo_app/shared/widgets/buttons/filter_tab_bar.dart';
 import 'package:task_todo_app/shared/widgets/calendar/calendar_strip.dart';
-import 'package:task_todo_app/shared/widgets/cards/task_card.dart';
+import 'package:task_todo_app/shared/widgets/cards/swipeable_task_card.dart';
 
 class TasksPage extends StatefulWidget {
   const TasksPage({super.key});
@@ -19,62 +20,135 @@ class TasksPage extends StatefulWidget {
 class _TasksPageState extends State<TasksPage> {
   DateTime _selectedDate = DateTime.now();
   int _selectedFilterIndex = 0;
+  
+  User? _currentUser;
+  List<Statuse> _statuses = [];
+  List<Task> _tasks = [];
+  List<TaskGroup> _groups = [];
+  bool _isLoading = true;
 
-  final List<String> _filterTabs = ['All', 'To do', 'In Progress', 'Completed'];
+  final List<String> _filterTabs = ['All', 'To Do', 'In Progress', 'Done'];
 
-  // Sample task data
-  final List<Map<String, dynamic>> _tasks = [
-    {
-      'projectName': 'Grocery shopping app design',
-      'taskTitle': 'Market Research',
-      'time': DateTime.now().copyWith(hour: 10, minute: 0),
-      'status': TaskStatus.done,
-      'icon': IconsaxPlusBold.briefcase,
-      'iconColor': const Color(0xFFF478B8),
-    },
-    {
-      'projectName': 'Grocery shopping app design',
-      'taskTitle': 'Competitive Analysis',
-      'time': DateTime.now().copyWith(hour: 12, minute: 0),
-      'status': TaskStatus.inProgress,
-      'icon': IconsaxPlusBold.briefcase,
-      'iconColor': const Color(0xFFF478B8),
-    },
-    {
-      'projectName': 'Uber Eats redesign challenge',
-      'taskTitle': 'Create Low-fidelity Wireframe',
-      'time': DateTime.now().copyWith(hour: 19, minute: 0),
-      'status': TaskStatus.todo,
-      'icon': IconsaxPlusBold.user,
-      'iconColor': const Color(0xFF9260F4),
-    },
-    {
-      'projectName': 'About design sprint',
-      'taskTitle': 'How to pitch a Design Sprint',
-      'time': DateTime.now().copyWith(hour: 21, minute: 0),
-      'status': TaskStatus.todo,
-      'icon': IconsaxPlusBold.book_1,
-      'iconColor': const Color(0xFFFF7D53),
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
-  List<Map<String, dynamic>> get _filteredTasks {
+  Future<void> _loadData() async {
+    final user = await userRepository.getCurrentUser();
+    if (user == null) return;
+
+    final statuses = await statusRepository.getAll();
+    final tasks = await taskRepository.getTodayTasks(user.serverId);
+    final groups = await taskGroupRepository.getAllForUser(user.serverId);
+
+    if (mounted) {
+      setState(() {
+        _currentUser = user;
+        _statuses = statuses;
+        _tasks = tasks;
+        _groups = groups;
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadTasksForDate(DateTime date) async {
+    if (_currentUser == null) return;
+
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = startOfDay.add(const Duration(days: 1));
+
+    final tasks = await taskRepository.getByDateRange(
+      _currentUser!.serverId,
+      startOfDay,
+      endOfDay,
+    );
+
+    if (mounted) {
+      setState(() {
+        _tasks = tasks;
+      });
+    }
+  }
+
+  List<Task> get _filteredTasks {
     if (_selectedFilterIndex == 0) return _tasks;
 
-    TaskStatus? filterStatus;
+    String? filterStatusName;
     switch (_selectedFilterIndex) {
       case 1:
-        filterStatus = TaskStatus.todo;
+        filterStatusName = 'To Do';
         break;
       case 2:
-        filterStatus = TaskStatus.inProgress;
+        filterStatusName = 'In Progress';
         break;
       case 3:
-        filterStatus = TaskStatus.done;
+        filterStatusName = 'Done';
         break;
     }
 
-    return _tasks.where((task) => task['status'] == filterStatus).toList();
+    if (filterStatusName == null) return _tasks;
+
+    final status = _statuses.where((s) => s.name == filterStatusName).firstOrNull;
+    if (status == null) return _tasks;
+
+    return _tasks.where((t) => t.statusServerId == status.serverId).toList();
+  }
+
+  TaskStatus _getTaskStatus(Task task) {
+    final status = _statuses.where((s) => s.serverId == task.statusServerId).firstOrNull;
+    if (status == null) return TaskStatus.todo;
+    
+    switch (status.name) {
+      case 'In Progress':
+        return TaskStatus.inProgress;
+      case 'Done':
+        return TaskStatus.done;
+      default:
+        return TaskStatus.todo;
+    }
+  }
+
+  TaskGroup? _getTaskGroup(Task task) {
+    return _groups.where((g) => g.serverId == task.groupServerId).firstOrNull;
+  }
+
+  Color _parseHexColor(String hex) {
+    final buffer = StringBuffer();
+    if (hex.length == 6 || hex.length == 7) buffer.write('ff');
+    buffer.write(hex.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
+
+  IconData _getIconForGroup(String? iconName) {
+    switch (iconName) {
+      case 'briefcase':
+        return IconsaxPlusBold.briefcase;
+      case 'user':
+        return IconsaxPlusBold.user;
+      case 'palette':
+        return IconsaxPlusBold.paintbucket;
+      case 'book':
+        return IconsaxPlusBold.book_1;
+      default:
+        return IconsaxPlusBold.task_square;
+    }
+  }
+
+  Future<void> _updateTaskStatus(Task task, String statusName) async {
+    final status = _statuses.where((s) => s.name == statusName).firstOrNull;
+    if (status == null) return;
+
+    final markCompleted = statusName == 'Done';
+    await taskRepository.updateStatus(task, status.serverId, markCompleted: markCompleted);
+    await _loadTasksForDate(_selectedDate);
+  }
+
+  Future<void> _deleteTask(Task task) async {
+    await taskRepository.delete(task.id);
+    await _loadTasksForDate(_selectedDate);
   }
 
   @override
@@ -102,6 +176,7 @@ class _TasksPageState extends State<TasksPage> {
                 selectedDate: _selectedDate,
                 onDateSelected: (date) {
                   setState(() => _selectedDate = date);
+                  _loadTasksForDate(date);
                 },
               ),
 
@@ -116,29 +191,41 @@ class _TasksPageState extends State<TasksPage> {
                 },
               ),
 
-              // const SizedBox(height: 24),
-              
-
               // Task List
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _filteredTasks.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final task = _filteredTasks[index];
-                    return TaskCard(
-                      projectName: task['projectName'],
-                      taskTitle: task['taskTitle'],
-                      time: task['time'],
-                      status: task['status'],
-                      icon: task['icon'],
-                      iconColor: task['iconColor'],
-                    );
-                  },
-                ),
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _filteredTasks.isEmpty
+                        ? _buildEmptyState(colors)
+                        : ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _filteredTasks.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              final task = _filteredTasks[index];
+                              final group = _getTaskGroup(task);
+                              final groupColor = group != null 
+                                  ? _parseHexColor(group.hexColor) 
+                                  : const Color(0xFF9260F4);
+                              
+                              return SwipeableTaskCard(
+                                id: task.serverId,
+                                projectName: group?.name ?? 'Uncategorized',
+                                taskTitle: task.title,
+                                time: task.startDate,
+                                status: _getTaskStatus(task),
+                                icon: _getIconForGroup(group?.icon),
+                                iconColor: groupColor,
+                                onMarkDone: () => _updateTaskStatus(task, 'Done'),
+                                onMarkInProgress: () => _updateTaskStatus(task, 'In Progress'),
+                                onMarkTodo: () => _updateTaskStatus(task, 'To Do'),
+                                onMarkCanceled: () => _updateTaskStatus(task, 'Canceled'),
+                                onDelete: () => _deleteTask(task),
+                              );
+                            },
+                          ),
               ),
 
               // Bottom padding for nav bar
@@ -212,6 +299,38 @@ class _TasksPageState extends State<TasksPage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildEmptyState(AppColorsLight colors) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              IconsaxPlusLinear.task_square,
+              size: 64,
+              color: colors.textSecondary.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No tasks for this day',
+              style: AppTypography.titleMedium.copyWith(
+                color: colors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Tap + to add a new task',
+              style: AppTypography.bodyMedium.copyWith(
+                color: colors.textSecondary.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:task_todo_app/feature/home/nav_page.dart';
+import 'core/database/database.dart';
+import 'core/di/injection.dart';
 import 'core/theme/theme.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize database
+  await AppDatabase.initialize();
+
+  // Initialize dependency injection
+  await initializeDependencies();
 
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(

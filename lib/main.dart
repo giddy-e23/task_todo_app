@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
 import 'package:task_todo_app/feature/auth/presentation/pages/welcome.dart';
+import 'package:task_todo_app/feature/home/nav_page.dart';
 import 'package:task_todo_app/feature/widgets_page.dart';
 import 'core/theme/theme.dart';
 import 'feature/showcase/presentation/pages/showcase_page.dart';
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system, // Follows device setting
 
-      home: const WidgetsPage(), // Widget showcase for testing
+      home: const NavPage(), // Widget showcase for testing
     );
   }
 }

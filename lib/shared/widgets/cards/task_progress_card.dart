@@ -100,7 +100,7 @@ class _TaskProgressCardState extends State<TaskProgressCard>
                     widget.category,
                     style: AppTypography.bodyMedium.copyWith(
                       color: AppColors.of(context).textSecondary,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -118,9 +118,9 @@ class _TaskProgressCardState extends State<TaskProgressCard>
               widget.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: AppTypography.titleMedium.copyWith(
+              style: AppTypography.titleSmall.copyWith(
                 color: Colors.black87,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w400,
               ),
             ),
 

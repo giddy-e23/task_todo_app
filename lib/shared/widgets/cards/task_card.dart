@@ -41,18 +41,18 @@ class TaskCard extends StatelessWidget {
           color: colors.surface,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(12.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: Text(
                       projectName,
-                      style: AppTypography.bodyMedium.copyWith(
+                      style: AppTypography.bodySmall.copyWith(
                         color: colors.textSecondary,
                       ),
                     ),
@@ -63,12 +63,11 @@ class TaskCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
               Text(
                 taskTitle,
-                style: AppTypography.titleMedium.copyWith(
+                style: AppTypography.bodyMediumLight.copyWith(
                   color: colors.textPrimary,
-                  fontWeight: FontWeight.w700,
+                  
                 ),
               ),
               const SizedBox(height: 12),

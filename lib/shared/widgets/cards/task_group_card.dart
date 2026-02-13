@@ -53,12 +53,14 @@ class TaskGroup extends StatelessWidget {
                       title,
                       style: AppTypography.titleMedium.copyWith(
                       color: colors.textPrimary,
+                      fontWeight: FontWeight.w400
                     ),
                     ),
                     Text(
                       taskCount == 1 ? "$taskCount Task" : "$taskCount Tasks",
-                      style: AppTypography.bodyMedium.copyWith(
+                      style: AppTypography.bodySmall.copyWith(
                       color: colors.textSecondary,
+                      fontWeight: FontWeight.w400,
                       height: 1.5,
                     ),
                     ),
@@ -76,7 +78,7 @@ class TaskGroup extends StatelessWidget {
               animateFromLastPercent: true,
               center: Text(
                 "${(progressPercent * 100).toInt()}%",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.0, color: AppColors.of(context).textPrimary),
+                style: TextStyle(fontWeight: FontWeight.w400, fontSize: 12.0, color: AppColors.of(context).textPrimary),
               ),
 
               circularStrokeCap: CircularStrokeCap.round,

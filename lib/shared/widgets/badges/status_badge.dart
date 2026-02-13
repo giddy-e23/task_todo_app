@@ -92,9 +92,12 @@ class StatusBadge extends StatelessWidget {
         horizontal: AppSpacing.sm,
         vertical: AppSpacing.xxs,
       ),
-      decoration: BoxDecoration(
+      decoration: ShapeDecoration(shape: 
+      
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
         color: backgroundColor,
-        borderRadius: AppRadius.borderRadiusXS,
       ),
       child: Text(
         customLabel ?? _defaultLabel,

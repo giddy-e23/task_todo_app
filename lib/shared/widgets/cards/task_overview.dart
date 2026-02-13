@@ -30,18 +30,21 @@ class TaskOverview extends StatelessWidget {
               Text("Your today's task\nalmost done!", 
               softWrap: true,
               maxLines: 2,
-              style: AppTypography.titleMedium.copyWith(
+              style: AppTypography.titleSmall.copyWith(
+                fontWeight: FontWeight.w400,
                 color: AppColors.light.textOnPrimary,
+                
               ),),
               const SizedBox(height: 16),
              
               AppButton.primary(
-                label: "View All Tasks", 
+                label: "View Task", 
                 backgroundColor: AppColors.light.background,
                 foregroundColor: AppColors.light.borderFocused,
               onPressed: () {}, 
               fullWidth: false, 
-              size: AppButtonSize.small,)
+             size: AppButtonSize.small,
+              )
             ],
           ),
 

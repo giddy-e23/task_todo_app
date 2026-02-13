@@ -21,6 +21,7 @@ class CustomAppBackground extends StatelessWidget {
             "assets/images/background.png",
             fit: BoxFit.cover,
             alignment: Alignment.topCenter,
+            opacity: const AlwaysStoppedAnimation(0.2), // Adjust opacity as needed
           ),
         ),
 

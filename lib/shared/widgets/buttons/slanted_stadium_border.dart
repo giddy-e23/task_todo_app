@@ -54,8 +54,9 @@ class SlantedStadiumBorder extends OutlinedBorder {
     // Use cornerRadius, but cap it at half the height to avoid overlap
     final radius = math.min(cornerRadius, height / 2);
 
-    // Calculate vertical offset for the tilt at center points
-    final tiltOffset = height * tiltAmount;
+    // Fixed pixel bulge - use tiltAmount directly as pixels (not ratio)
+    // If tiltAmount is small (< 1), treat it as ratio for backward compatibility
+    final tiltOffset = tiltAmount < 1 ? height * tiltAmount : tiltAmount;
 
     // Key points
     final left = rect.left;
@@ -214,7 +215,9 @@ class SlantedStadiumGlowPainter extends CustomPainter {
     final path = Path();
     final height = rect.height;
     final radius = math.min(cornerRadius, height / 2);
-    final tiltOffset = height * tiltAmount;
+    // Fixed pixel bulge - use tiltAmount directly as pixels (not ratio)
+    // If tiltAmount is small (< 1), treat it as ratio for backward compatibility
+    final tiltOffset = tiltAmount < 1 ? height * tiltAmount : tiltAmount;
 
     final left = rect.left;
     final right = rect.right;

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
-import 'package:iconsax_plus/iconsax_plus.dart';
 import '../../../core/theme/theme.dart';
 import 'slanted_stadium_border.dart';
 
@@ -74,6 +73,8 @@ class AppButton extends StatelessWidget {
 
   /// Custom button height (overrides size-based height when set)
   final double? height;
+  final double tiltAmount;
+  final double cornerRadius;
 
   const AppButton({
     super.key,
@@ -92,12 +93,15 @@ class AppButton extends StatelessWidget {
     this.foregroundColor,
     this.width,
     this.height,
+    this.tiltAmount = 0.05,
+    this.cornerRadius = 8.0,
   });
 
   /// Creates a primary filled button
   factory AppButton.primary({
     Key? key,
     required String label,
+
     VoidCallback? onPressed,
     AppButtonSize size = AppButtonSize.large,
     bool showArrow = false,
@@ -109,8 +113,12 @@ class AppButton extends StatelessWidget {
     Color? foregroundColor,
     double? width,
     double? height,
+    double tiltAmount = 0.05,
+    double cornerRadius = 8.0,
   }) {
     return AppButton(
+      tiltAmount: tiltAmount,
+      cornerRadius: cornerRadius,
       key: key,
       label: label,
       onPressed: onPressed,
@@ -238,7 +246,7 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final effectiveRadius = borderRadius ?? AppRadius.xxl;
+    final effectiveRadius = borderRadius ?? AppRadius.xs;
     final effectiveBgColor = backgroundColor ?? colors.primary;
     final effectiveFgColor = foregroundColor ?? colors.primary;
 
@@ -272,40 +280,30 @@ class AppButton extends StatelessWidget {
       ],
     );
 
-    // Button shape parameters
-    const double tiltAmount = 0.05; // How much edges bulge outward
-    const double cornerRadius = 16.0; // Slightly curved corners
+    // // Button shape parameters
+    // const double tiltAmount = 0.05; // How much edges bulge outward
+    // const double cornerRadius = 8.0; // Slightly curved corners
 
     switch (variant) {
       case AppButtonVariant.primary:
         return SizedBox(
           width: _width,
           height: _height,
-          child: CustomPaint(
-            painter: SlantedStadiumGlowPainter(
-              glowColor: effectiveBgColor.withOpacity(0.35),
-              blurRadius: 12.0,
-              shadowOffset: const Offset(0, 6),
-              tiltAmount: tiltAmount,
-              cornerRadius: cornerRadius,
-              enabled: onPressed != null,
-            ),
-            child: ElevatedButton(
-              onPressed: isLoading ? null : onPressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: effectiveBgColor,
-                foregroundColor: foregroundColor ?? colors.onPrimary,
-                textStyle: _textStyle,
-                minimumSize: fullWidth ? null : Size.zero,
-                tapTargetSize: fullWidth ? null : MaterialTapTargetSize.shrinkWrap,
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                shape: const SlantedStadiumBorder(
-                  tiltAmount: tiltAmount,
-                  cornerRadius: cornerRadius,
-                ),
+          child: ElevatedButton(
+            onPressed: isLoading ? null : onPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: effectiveBgColor,
+              foregroundColor: foregroundColor ?? colors.onPrimary,
+              textStyle: _textStyle,
+              minimumSize: fullWidth ? null : Size.zero,
+              tapTargetSize: fullWidth ? null : MaterialTapTargetSize.shrinkWrap,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              shape:  SlantedStadiumBorder(
+                tiltAmount:tiltAmount,
+                cornerRadius: cornerRadius,
               ),
-              child: Center(child: child),
             ),
+            child: Center(child: child),
           ),
         );
 

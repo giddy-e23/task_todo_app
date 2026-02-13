@@ -4,6 +4,7 @@ import 'package:task_todo_app/core/theme/app_colors.dart';
 import 'package:task_todo_app/core/theme/app_typography.dart';
 import 'package:task_todo_app/shared/custom_app_background.dart';
 import 'package:task_todo_app/shared/widgets/badges/status_badge.dart';
+import 'package:task_todo_app/shared/widgets/buttons/app_button.dart';
 import 'package:task_todo_app/shared/widgets/buttons/filter_tab_bar.dart';
 import 'package:task_todo_app/shared/widgets/calendar/calendar_strip.dart';
 import 'package:task_todo_app/shared/widgets/cards/task_card.dart';
@@ -116,6 +117,7 @@ class _TasksPageState extends State<TasksPage> {
               ),
 
               // const SizedBox(height: 24),
+              
 
               // Task List
               Padding(

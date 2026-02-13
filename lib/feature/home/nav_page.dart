@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
 import 'package:task_todo_app/feature/home/home_page.dart';
+import 'package:task_todo_app/feature/profile/profile_page.dart';
 import 'package:task_todo_app/feature/projects/add_project_page.dart';
+import 'package:task_todo_app/feature/projects/projects_page.dart';
 import 'package:task_todo_app/feature/tasks/tasks_page.dart';
 import 'package:task_todo_app/shared/widgets/navigation/custom_bottom_nav.dart';
 
 class NavPage extends StatefulWidget {
-   const NavPage({super.key});
+  const NavPage({super.key});
 
   @override
   State<NavPage> createState() => _NavPageState();
@@ -18,6 +20,8 @@ class _NavPageState extends State<NavPage> {
   final List<Widget> _pages = [
     const HomePage(),
     const TasksPage(),
+    const ProjectsPage(),
+    const ProfilePage(),
   ];
 
   @override

@@ -10,14 +10,21 @@ class TaskGroup extends StatelessWidget {
   final int taskCount;
   final double progressPercent;
   final IconData? groupIcon;
+  final Color? progressColor;
 
   
-  const TaskGroup({super.key, required this.iconColor, required this.title, required this.taskCount, required this.progressPercent, this.groupIcon});
+  const TaskGroup({
+    super.key,
+    required this.iconColor,
+    required this.title,
+    required this.taskCount,
+    required this.progressPercent,
+    this.groupIcon,
+    this.progressColor,
+  });
 
   @override
   Widget build(BuildContext context) {
-    Color iconColor = Color(0xFFF478B8);
-    Color containerColor = iconColor.withValues(alpha: 0.2);
     final colors = AppColors.of(context);
 
     return Container(
@@ -73,7 +80,7 @@ class TaskGroup extends StatelessWidget {
               ),
 
               circularStrokeCap: CircularStrokeCap.round,
-              progressColor: Colors.purple,
+              progressColor: progressColor ?? iconColor,
             ),
           ],
         ),

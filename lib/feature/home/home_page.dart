@@ -14,7 +14,10 @@ import 'package:task_todo_app/shared/widgets/cards/task_progress_card.dart';
 import 'package:task_todo_app/shared/widgets/app_section_bar.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  /// Callback when user taps "View Tasks" button
+  final VoidCallback? onViewTasks;
+
+  const HomePage({super.key, this.onViewTasks});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -203,6 +206,7 @@ class _HomePageState extends State<HomePage> {
             child: TaskOverview(
               completedTasks: _completedTasks,
               totalTasks: _totalTasks,
+              onViewTasks: widget.onViewTasks,
             ),
           ),
 

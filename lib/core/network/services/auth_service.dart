@@ -112,6 +112,19 @@ class AuthApiService {
     }
   }
 
+  /// Update user profile
+  Future<UserDto> updateProfile(UpdateProfileRequestDto request) async {
+    try {
+      final response = await _apiClient.dio.put(
+        ApiEndpoints.updateProfile,
+        data: request.toJson(),
+      );
+      return UserDto.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
   /// Logout - clear local token
   Future<void> logout() async {
     await _tokenRepository.clearAll();

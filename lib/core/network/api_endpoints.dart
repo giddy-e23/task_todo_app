@@ -11,6 +11,7 @@ class ApiEndpoints {
 
   // User
   static const String user = '/user';
+  static const String updateProfile = '/updateProfile';
 
   // Tasks
   static const String createTask = '/createTask';

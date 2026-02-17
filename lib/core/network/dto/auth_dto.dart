@@ -39,6 +39,46 @@ class UserDto {
   }
 
   String get fullName => '$firstName $lastName';
+
+  /// Creates a copy of this UserDto with the given fields replaced with new values
+  UserDto copyWith({
+    String? firstName,
+    String? lastName,
+    String? phoneNumber,
+  }) {
+    return UserDto(
+      id: id,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      email: email,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      emailVerifiedAt: emailVerifiedAt,
+      profilePictureUrl: profilePictureUrl,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
+}
+
+/// Request DTO for updating user profile
+class UpdateProfileRequestDto {
+  final String? firstName;
+  final String? lastName;
+  final String? phoneNumber;
+
+  UpdateProfileRequestDto({
+    this.firstName,
+    this.lastName,
+    this.phoneNumber,
+  });
+
+  Map<String, dynamic> toJson() {
+    final json = <String, dynamic>{};
+    if (firstName != null) json['first_name'] = firstName;
+    if (lastName != null) json['last_name'] = lastName;
+    if (phoneNumber != null) json['phone_number'] = phoneNumber;
+    return json;
+  }
 }
 
 /// Auth response from login/register

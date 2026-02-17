@@ -15,6 +15,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogoutRequested>(_onLogout);
     on<ForgotPasswordRequested>(_onForgotPassword);
     on<ResetPasswordRequested>(_onResetPassword);
+    on<UpdateProfileRequested>(_onUpdateProfile);
   }
 
   Future<void> _onCheckAuth(
@@ -127,5 +128,40 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     // This is handled separately - doesn't change auth state
     // The UI should handle the response via a separate mechanism
+  }
+
+  Future<void> _onUpdateProfile(
+    UpdateProfileRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    // Store current state to restore on error
+    final currentState = state;
+
+    emit(const AuthLoading());
+
+    try {
+      final request = UpdateProfileRequestDto(
+        firstName: event.firstName,
+        lastName: event.lastName,
+        phoneNumber: event.phoneNumber,
+      );
+
+      final updatedUser = await authApiService.updateProfile(request);
+      emit(Authenticated(updatedUser));
+    } on ApiException catch (e) {
+      // Restore previous state and emit error
+      if (currentState is Authenticated) {
+        emit(currentState);
+      }
+      emit(AuthError(
+        message: e.message,
+        validationErrors: e.validationErrors,
+      ));
+    } catch (e) {
+      if (currentState is Authenticated) {
+        emit(currentState);
+      }
+      emit(AuthError(message: e.toString()));
+    }
   }
 }

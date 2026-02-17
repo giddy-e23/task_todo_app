@@ -20,8 +20,12 @@ class _NavPageState extends State<NavPage> {
   // Key to force refresh of pages when task is created
   Key _pageKey = UniqueKey();
 
+  void _navigateToTasks() {
+    setState(() => _currentIndex = 1);
+  }
+
   List<Widget> get _pages => [
-    HomePage(key: _pageKey),
+    HomePage(key: _pageKey, onViewTasks: _navigateToTasks),
     TasksPage(key: ValueKey('tasks_$_pageKey')),
     ProjectsPage(key: ValueKey('projects_$_pageKey')),
     const ProfilePage(),

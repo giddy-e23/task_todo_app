@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 
 import '../config/app_config.dart';
+import '../logging/app_logger.dart';
 import 'services/token_repository.dart';
 
 /// API client singleton for making HTTP requests
@@ -48,29 +48,43 @@ class ApiClient {
             options.headers['Authorization'] = 'Bearer $token';
           }
 
-          if (appConfig.isDebug) {
-            debugPrint('🌐 REQUEST[${options.method}] => PATH: ${options.path}');
-            debugPrint('📦 DATA: ${options.data}');
-          }
+          // Store request start time for duration calculation
+          options.extra['startTime'] = DateTime.now();
+
+          log.request(
+            method: options.method,
+            path: options.path,
+            url: options.uri.toString(),
+            headers: options.headers.map((k, v) => MapEntry(k, v.toString())),
+            data: options.data,
+          );
 
           return handler.next(options);
         },
         onResponse: (response, handler) {
-          if (appConfig.isDebug) {
-            debugPrint(
-              '✅ RESPONSE[${response.statusCode}] => PATH: ${response.requestOptions.path}',
-            );
-          }
+          final startTime = response.requestOptions.extra['startTime'] as DateTime?;
+          final duration = startTime != null 
+              ? DateTime.now().difference(startTime)
+              : null;
+
+          log.response(
+            statusCode: response.statusCode,
+            path: response.requestOptions.path,
+            data: response.data,
+            duration: duration,
+          );
+
           return handler.next(response);
         },
         onError: (error, handler) async {
-          if (appConfig.isDebug) {
-            debugPrint(
-              '❌ ERROR[${error.response?.statusCode}] => PATH: ${error.requestOptions.path}',
-            );
-            debugPrint('📛 MESSAGE: ${error.message}');
-            debugPrint('📛 DATA: ${error.response?.data}');
-          }
+          log.httpError(
+            statusCode: error.response?.statusCode,
+            path: error.requestOptions.path,
+            message: error.message,
+            responseData: error.response?.data,
+            error: error,
+            stackTrace: error.stackTrace,
+          );
 
           // Handle 401 Unauthorized - clear token
           if (error.response?.statusCode == 401) {

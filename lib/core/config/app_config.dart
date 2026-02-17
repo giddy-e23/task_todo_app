@@ -10,7 +10,7 @@ abstract class AppConfig {
 /// Development configuration
 class DevConfig implements AppConfig {
   @override
-  String get baseUrl => 'http://10.0.2.2:8000/api'; // Android emulator localhost
+  String get baseUrl => 'http://192.168.1.199:8000/api'; // Local network IP for physical device
 
   @override
   bool get isDebug => true;

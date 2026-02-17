@@ -16,25 +16,37 @@ class NavPage extends StatefulWidget {
 
 class _NavPageState extends State<NavPage> {
   int _currentIndex = 0;
+  
+  // Key to force refresh of pages when task is created
+  Key _pageKey = UniqueKey();
 
-  final List<Widget> _pages = [
-    const HomePage(),
-    const TasksPage(),
-    const ProjectsPage(),
+  List<Widget> get _pages => [
+    HomePage(key: _pageKey),
+    TasksPage(key: ValueKey('tasks_$_pageKey')),
+    ProjectsPage(key: ValueKey('projects_$_pageKey')),
     const ProfilePage(),
   ];
+
+  Future<void> _onFabTap() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (context) => const AddProjectPage()),
+    );
+    
+    // If a task was created, refresh the current page
+    if (result == true && mounted) {
+      setState(() {
+        _pageKey = UniqueKey();
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
   extendBody: true,
    body: _pages[_currentIndex],
-   floatingActionButton: AppFab(onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const AddProjectPage()),
-    );
-   }),
+   floatingActionButton: AppFab(onTap: _onFabTap),
    floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
    bottomNavigationBar: CustomBottomNavBar(
      currentIndex: _currentIndex,

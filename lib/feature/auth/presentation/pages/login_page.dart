@@ -63,7 +63,10 @@ class _LoginPageState extends State<LoginPage> {
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthError) {
+          if (state is Authenticated) {
+            // Login successful - pop back to auth gate which will show home
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),

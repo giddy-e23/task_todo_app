@@ -72,7 +72,10 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthError) {
+          if (state is Authenticated) {
+            // Registration successful - pop back to auth gate which will show home
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),

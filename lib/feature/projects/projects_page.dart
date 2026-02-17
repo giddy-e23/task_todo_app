@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
-import 'package:task_todo_app/core/database/database.dart';
 import 'package:task_todo_app/core/di/injection.dart';
+import 'package:task_todo_app/core/network/api_client.dart';
+import 'package:task_todo_app/core/network/dto/dto.dart';
 import 'package:task_todo_app/core/theme/app_colors.dart';
 import 'package:task_todo_app/core/theme/app_typography.dart';
 import 'package:task_todo_app/shared/custom_app_background.dart';
@@ -22,11 +23,9 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
   final List<String> _filterTabs = ['All', 'Active', 'Completed'];
 
-  User? _currentUser;
-  List<TaskGroup> _groups = [];
-  List<Task> _allTasks = [];
-  List<Statuse> _statuses = [];
+  List<TaskGroupDto> _groups = [];
   bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -35,41 +34,44 @@ class _ProjectsPageState extends State<ProjectsPage> {
   }
 
   Future<void> _loadData() async {
-    final user = await userRepository.getCurrentUser();
-    if (user == null) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    final statuses = await statusRepository.getAll();
-    final groups = await taskGroupRepository.getAllForUser(user.serverId);
-    final tasks = await taskRepository.getAllForUser(user.serverId);
+    try {
+      final groups = await taskApiService.getAllTaskGroups();
 
-    if (mounted) {
-      setState(() {
-        _currentUser = user;
-        _statuses = statuses;
-        _groups = groups;
-        _allTasks = tasks;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _groups = groups;
+          _isLoading = false;
+        });
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.message;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Failed to load projects. Pull to refresh.';
+        });
+      }
     }
   }
 
   List<_ProjectData> get _projects {
-    final doneStatus = _statuses.where((s) => s.name == 'Done').firstOrNull;
-
     return _groups.map((group) {
-      final groupTasks = _allTasks.where((t) => t.groupServerId == group.serverId).toList();
-      final completedTasks = doneStatus != null
-          ? groupTasks.where((t) => t.statusServerId == doneStatus.serverId).length
-          : 0;
-      final taskCount = groupTasks.length;
-      final progress = taskCount > 0 ? completedTasks / taskCount : 0.0;
-      final isCompleted = taskCount > 0 && completedTasks == taskCount;
+      final isCompleted = group.completed >= 1.0;
 
       return _ProjectData(
         group: group,
-        taskCount: taskCount,
-        completedTasks: completedTasks,
-        progressPercent: progress,
+        progressPercent: group.completed,
         isCompleted: isCompleted,
       );
     }).toList();
@@ -128,22 +130,15 @@ class _ProjectsPageState extends State<ProjectsPage> {
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
 
-    if (_isLoading) {
-      return Scaffold(
-        body: CustomAppBackground(
-          child: Center(
-            child: CircularProgressIndicator(color: colors.primary),
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       body: CustomAppBackground(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        child: RefreshIndicator(
+          onRefresh: _loadData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               const SizedBox(height: 16),
 
               // Header
@@ -195,21 +190,62 @@ class _ProjectsPageState extends State<ProjectsPage> {
               // Projects list
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: _filteredProjects.isEmpty
-                    ? _buildEmptyState(colors)
-                    : Column(
-                        children: _filteredProjects
-                            .map((project) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: _buildProjectCard(project, colors),
-                                ))
-                            .toList(),
-                      ),
+                child: _isLoading
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 40),
+                          child: CircularProgressIndicator(),
+                        ),
+                      )
+                    : _errorMessage != null
+                        ? _buildErrorState(colors)
+                        : _filteredProjects.isEmpty
+                            ? _buildEmptyState(colors)
+                            : Column(
+                                children: _filteredProjects
+                                    .map((project) => Padding(
+                                          padding: const EdgeInsets.only(bottom: 12),
+                                          child: _buildProjectCard(project, colors),
+                                        ))
+                                    .toList(),
+                              ),
               ),
 
               const SizedBox(height: 100), // Bottom padding for nav bar
             ],
           ),
+        ),
+      ),
+    ),
+  );
+  }
+
+  Widget _buildErrorState(AppColorsLight colors) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              IconsaxPlusLinear.warning_2,
+              size: 48,
+              color: colors.error,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _errorMessage!,
+              style: AppTypography.bodyLarge.copyWith(
+                color: colors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: _loadData,
+              icon: const Icon(IconsaxPlusLinear.refresh),
+              label: const Text('Retry'),
+            ),
+          ],
         ),
       ),
     );
@@ -271,7 +307,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
   Widget _buildProjectCard(_ProjectData project, AppColorsLight colors) {
     final groupColor = _parseHexColor(project.group.hexColor);
-    final backgroundColor = groupColor.withOpacity(0.15);
+    final backgroundColor = groupColor.withValues(alpha: 0.15);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -317,13 +353,6 @@ class _ProjectsPageState extends State<ProjectsPage> {
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${project.completedTasks}/${project.taskCount} Tasks',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: colors.textSecondary,
-                  ),
                 ),
                 const SizedBox(height: 10),
                 // Progress bar
@@ -371,16 +400,12 @@ class _ProjectsPageState extends State<ProjectsPage> {
 }
 
 class _ProjectData {
-  final TaskGroup group;
-  final int taskCount;
-  final int completedTasks;
+  final TaskGroupDto group;
   final double progressPercent;
   final bool isCompleted;
 
   _ProjectData({
     required this.group,
-    required this.taskCount,
-    required this.completedTasks,
     required this.progressPercent,
     required this.isCompleted,
   });

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../shared/shared.dart';
+import 'login_page.dart';
+import 'register_page.dart';
 
 /// Welcome/onboarding page with full-screen hero illustration.
 class WelcomePage extends StatelessWidget {
@@ -61,9 +63,48 @@ class WelcomePage extends StatelessWidget {
                       showArrow: true,
                       label: "Let's Start",
                       onPressed: () {
-                        // TODO: Navigate to next page (login/home)
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const LoginPage(),
+                          ),
+                        );
                       },
                     ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+
+                  // Create account link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Don't have an account? ",
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const RegisterPage(),
+                            ),
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(
+                          'Sign Up',
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: colors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: AppSpacing.xxl),
                 ],
@@ -75,3 +116,4 @@ class WelcomePage extends StatelessWidget {
     );
   }
 }
+

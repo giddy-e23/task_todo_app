@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
 import 'package:task_todo_app/core/theme/app_colors.dart';
 import 'package:task_todo_app/core/theme/app_typography.dart';
+import 'package:task_todo_app/feature/auth/bloc/bloc.dart';
 import 'package:task_todo_app/shared/custom_app_background.dart';
 import 'package:task_todo_app/shared/widgets/avatars/avatar.dart';
 import 'package:task_todo_app/shared/widgets/buttons/app_button.dart';
@@ -11,12 +13,7 @@ import 'package:task_todo_app/shared/widgets/lists/settings_row.dart';
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
-  // Sample user data
-  static const String _userName = 'Alex Johnson';
-  static const String _userEmail = 'alex.johnson@email.com';
-  static const String? _userAvatar = null; // Uses initials if null
-
-  // Sample stats
+  // Sample stats (can be fetched from API later)
   static const int _totalProjects = 12;
   static const int _completedTasks = 48;
   static const int _inProgressTasks = 7;
@@ -107,49 +104,63 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildProfileSection(BuildContext context, AppColorsLight colors) {
-    return Center(
-      child: Column(
-        children: [
-          // Avatar
-          AppAvatar(
-            imageUrl: _userAvatar,
-            name: _userName,
-            size: AvatarSize.xxl,
-            borderColor: colors.primary,
-            borderWidth: 3,
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        String userName = 'Guest User';
+        String userEmail = 'guest@example.com';
+        String? userAvatar;
+
+        if (state is Authenticated) {
+          userName = state.user.fullName;
+          userEmail = state.user.email;
+          userAvatar = state.user.profilePictureUrl;
+        }
+
+        return Center(
+          child: Column(
+            children: [
+              // Avatar
+              AppAvatar(
+                imageUrl: userAvatar,
+                name: userName,
+                size: AvatarSize.xxl,
+                borderColor: colors.primary,
+                borderWidth: 3,
+              ),
+
+              const SizedBox(height: 16),
+
+              // User name
+              Text(
+                userName,
+                style: AppTypography.headlineSmall.copyWith(
+                  color: colors.textPrimary,
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              // User email
+              Text(
+                userEmail,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: colors.textSecondary,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Edit profile button
+              AppButton.secondary(
+                label: 'Edit Profile',
+                size: AppButtonSize.small,
+                leadingIcon: IconsaxPlusLinear.edit_2,
+                onPressed: () {},
+              ),
+            ],
           ),
-
-          const SizedBox(height: 16),
-
-          // User name
-          Text(
-            _userName,
-            style: AppTypography.headlineSmall.copyWith(
-              color: colors.textPrimary,
-            ),
-          ),
-
-          const SizedBox(height: 4),
-
-          // User email
-          Text(
-            _userEmail,
-            style: AppTypography.bodyMedium.copyWith(
-              color: colors.textSecondary,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Edit profile button
-          AppButton.secondary(
-            label: 'Edit Profile',
-            size: AppButtonSize.small,
-            leadingIcon: IconsaxPlusLinear.edit_2,
-            onPressed: () {},
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -275,7 +286,7 @@ class ProfilePage extends StatelessWidget {
   void _showLogoutDialog(BuildContext context, AppColorsLight colors) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: colors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -294,7 +305,7 @@ class ProfilePage extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancel',
               style: AppTypography.labelLarge.copyWith(
@@ -304,8 +315,9 @@ class ProfilePage extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              // Handle logout logic here
+              Navigator.pop(dialogContext);
+              // Dispatch logout event
+              context.read<AuthBloc>().add(const LogoutRequested());
             },
             child: Text(
               'Log Out',

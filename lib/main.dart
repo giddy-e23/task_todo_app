@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:task_todo_app/feature/auth/bloc/bloc.dart';
+import 'package:task_todo_app/feature/auth/presentation/pages/welcome.dart';
 import 'package:task_todo_app/feature/home/nav_page.dart';
 import 'core/database/database.dart';
 import 'core/di/injection.dart';
@@ -36,19 +39,52 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Task Todo',
-      debugShowCheckedModeBanner: false,
+    return BlocProvider(
+      create: (_) => AuthBloc()..add(const CheckAuthRequested()),
+      child: MaterialApp(
+        title: 'Task Todo',
+        debugShowCheckedModeBanner: false,
 
-      // Theme configuration
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system, // Follows device setting
+        // Theme configuration
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system, // Follows device setting
 
-      home: const NavPage(), // Widget showcase for testing
+        home: const AuthGate(),
+      ),
     );
   }
 }
+
+/// Auth gate that shows appropriate screen based on auth state
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, state) {
+        // Show loading splash while checking auth
+        if (state is AuthInitial || state is AuthLoading) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        // Show home if authenticated
+        if (state is Authenticated) {
+          return const NavPage();
+        }
+
+        // Show welcome/login if not authenticated
+        return const WelcomePage();
+      },
+    );
+  }
+}
+
 
 
 

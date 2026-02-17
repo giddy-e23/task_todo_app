@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_plus/iconsax_plus.dart';
+import 'package:task_todo_app/core/di/injection.dart';
+import 'package:task_todo_app/core/network/api_client.dart';
+import 'package:task_todo_app/core/network/dto/dto.dart';
 import 'package:task_todo_app/core/theme/app_colors.dart';
 import 'package:task_todo_app/core/theme/app_typography.dart';
 import 'package:task_todo_app/shared/custom_app_background.dart';
@@ -20,11 +23,12 @@ class _AddProjectPageState extends State<AddProjectPage> {
   String _selectedTaskGroup = 'Work';
   DateTime? _startDate;
   DateTime? _endDate;
+  bool _isLoading = false;
 
   final List<Map<String, dynamic>> _taskGroups = [
-    {'name': 'Work', 'icon': IconsaxPlusBold.briefcase, 'color': const Color(0xFFF478B8)},
-    {'name': 'Personal', 'icon': IconsaxPlusBold.user, 'color': const Color(0xFF9260F4)},
-    {'name': 'Study', 'icon': IconsaxPlusBold.book_1, 'color': const Color(0xFFFF7D53)},
+    {'name': 'Work', 'icon': IconsaxPlusBold.briefcase, 'iconName': 'briefcase', 'color': const Color(0xFFF478B8)},
+    {'name': 'Personal', 'icon': IconsaxPlusBold.user, 'iconName': 'user', 'color': const Color(0xFF9260F4)},
+    {'name': 'Study', 'icon': IconsaxPlusBold.book_1, 'iconName': 'book', 'color': const Color(0xFFFF7D53)},
   ];
 
   @override
@@ -112,8 +116,9 @@ class _AddProjectPageState extends State<AddProjectPage> {
             Padding(
               padding: const EdgeInsets.all(20),
               child: AppButton.primary(
-                label: 'Add Project',
-                onPressed: _handleAddProject,
+                label: 'Add Task',
+                onPressed: _isLoading ? null : _handleAddProject,
+                isLoading: _isLoading,
               ),
             ),
           ],
@@ -141,7 +146,7 @@ class _AddProjectPageState extends State<AddProjectPage> {
 
         // Title
         Text(
-          "Add Project",
+          "Add Task",
           style: AppTypography.headlineSmall.copyWith(
             color: colors.textPrimary,
           ),
@@ -470,22 +475,91 @@ class _AddProjectPageState extends State<AddProjectPage> {
     return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]}, ${date.year}';
   }
 
-  void _handleAddProject() {
-    // Handle project creation
-    final projectName = _projectNameController.text;
-    final description = _descriptionController.text;
+  String _colorToHex(Color color) {
+    return '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
+  }
 
-    if (projectName.isEmpty) {
+  Future<void> _handleAddProject() async {
+    final taskName = _projectNameController.text.trim();
+    final description = _descriptionController.text.trim();
+
+    // Validation
+    if (taskName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a project name')),
+        const SnackBar(content: Text('Please enter a task name')),
       );
       return;
     }
 
-    // TODO: Add project creation logic
-    debugPrint('Creating project: $projectName');
-    debugPrint('Description: $description');
-    
-    Navigator.maybePop(context);
+    if (_startDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a start date')),
+      );
+      return;
+    }
+
+    if (_endDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select an end date')),
+      );
+      return;
+    }
+
+    if (_endDate!.isBefore(_startDate!)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('End date must be after start date')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final selectedGroup = _taskGroups.firstWhere(
+        (g) => g['name'] == _selectedTaskGroup,
+      );
+
+      final request = CreateTaskRequestDto(
+        groupName: selectedGroup['name'] as String,
+        groupColor: _colorToHex(selectedGroup['color'] as Color),
+        groupIcon: selectedGroup['iconName'] as String?,
+        taskName: taskName,
+        taskDescription: description.isNotEmpty ? description : null,
+        startDate: _startDate!,
+        endDate: _endDate!,
+      );
+
+      await taskApiService.createTask(request);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Task created successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context, true); // Return true to indicate success
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create task: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

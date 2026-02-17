@@ -16,6 +16,7 @@ class ApiEndpoints {
   static const String createTask = '/createTask';
   static const String updateTaskStatus = '/updateTaskStatus';
   static const String getTaskGroups = '/getTaskGroups';
+  static const String getStatuses = '/getStatuses';
 
   /// Get task group with tasks: /getTaskGroups/{taskGroupId}
   static String getTaskGroupDetail(String taskGroupId) =>

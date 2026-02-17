@@ -1,4 +1,4 @@
-/// Task status info from API
+/// Task status info from API (embedded in task response)
 class TaskStatusDto {
   final String status;
   final String color;
@@ -12,6 +12,30 @@ class TaskStatusDto {
     return TaskStatusDto(
       status: json['status'] as String,
       color: json['color'] as String,
+    );
+  }
+}
+
+/// Status definition from /getStatuses endpoint
+class StatusDto {
+  final String id;
+  final String name;
+  final String hexColor;
+  final int displayOrder;
+
+  StatusDto({
+    required this.id,
+    required this.name,
+    required this.hexColor,
+    required this.displayOrder,
+  });
+
+  factory StatusDto.fromJson(Map<String, dynamic> json) {
+    return StatusDto(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      hexColor: json['hex_color'] as String,
+      displayOrder: json['display_order'] as int,
     );
   }
 }

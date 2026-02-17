@@ -37,6 +37,17 @@ class TaskApiService {
     }
   }
 
+  /// Get all available task statuses
+  Future<List<StatusDto>> getStatuses() async {
+    try {
+      final response = await _apiClient.dio.get(ApiEndpoints.getStatuses);
+      final data = response.data['data'] as List<dynamic>;
+      return data.map((json) => StatusDto.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
   /// Get all task groups (paginated)
   Future<PaginatedResponse<TaskGroupDto>> getTaskGroups({int page = 1}) async {
     try {
